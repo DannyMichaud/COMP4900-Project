@@ -1,0 +1,2 @@
+
+void startPatientServer(char* patientServerName);
