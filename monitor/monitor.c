@@ -13,6 +13,7 @@
 #include <sys/iofunc.h>
 #include <sys/dispatch.h>
 #include "monitor.h"
+#include "../patient/shared_memory.h"
 
 int main(int argc, char **argv) {
 
