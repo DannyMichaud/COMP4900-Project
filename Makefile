@@ -26,6 +26,6 @@ clean:
 #	cd solutions; make clean
 
 
-monitor.o: $(MONITOR_DIR)monitor.c $(MONITOR_DIR)monitor.h
-patient.o: $(PATIENT_DIR)patient.c
+monitor.o: $(MONITOR_DIR)monitor.c $(MONITOR_DIR)monitor.h $(PATIENT_DIR)shared_memory.h
+patient.o: $(PATIENT_DIR)patient.c $(PATIENT_DIR)patient.h $(PATIENT_DIR)shared_memory.h
 

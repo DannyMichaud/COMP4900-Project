@@ -1,3 +1,7 @@
+#include <stdint.h>
+#include <sys/iomsg.h>
+#include <sys/mman.h>
+
 #define PATIENT_SHMEM_SIZE 4096
 
 //for shared memory offsets on monitored values
@@ -20,4 +24,5 @@ typedef struct get_shmem_msg {
 typedef struct get_shmem_resp {
 	shm_handle_t mem_handle;
 } get_shmem_resp_t;
+
 
