@@ -101,8 +101,45 @@ void handleMessageFromMonitor(recv_buf_t msg, pid_t pid, int rcvid){
 		int result = MsgReply(rcvid, EOK, &rmsg, sizeof(get_shmem_resp_t));
 
 		//todo - set up threads to update shared memory
+		pthread_t threads[5];
+
+		initVitalThreads(threads);
 
 		break;
 	}
+}
+
+void initVitalThreads(pthread_t* threads){
+
+	patient_vital_thrinfo_t* vT1 = malloc(sizeof(patient_vital_thrinfo_t));
+	*vT1 = (patient_vital_thrinfo_t){HEARTBEAT, PATIENT_SHMEM_OFFSET_HEARTBEAT };
+	patient_vital_thrinfo_t* vT2 = malloc(sizeof(patient_vital_thrinfo_t));
+	*vT2 = (patient_vital_thrinfo_t){BLOOD_PRESSURE_SYSTOLIC, PATIENT_SHMEM_OFFSET_BLOOD_PRESSURE_SYSTOLIC };
+	patient_vital_thrinfo_t* vT3 = malloc(sizeof(patient_vital_thrinfo_t));
+	*vT3 = (patient_vital_thrinfo_t){BLOOD_PRESSURE_DIATOLIC, PATIENT_SHMEM_OFFSET_BLOOD_PRESSURE_DIATOLIC};
+	patient_vital_thrinfo_t* vT4 = malloc(sizeof(patient_vital_thrinfo_t));
+	*vT4 = (patient_vital_thrinfo_t){TEMPERATURE, PATIENT_SHMEM_OFFSET_TEMPERATURE};
+	patient_vital_thrinfo_t* vT5 = malloc(sizeof(patient_vital_thrinfo_t));
+	*vT5 = (patient_vital_thrinfo_t){RESPIRATION, PATIENT_SHMEM_OFFSET_RESPIRATION};
+	patient_vital_thrinfo_t* vT6 = malloc(sizeof(patient_vital_thrinfo_t));
+	*vT6 = (patient_vital_thrinfo_t){OXYGEN_SATURATION, PATIENT_SHMEM_OFFSET_OXYGEN_SATURATION};
+
+	//create thread for each vital
+	pthread_create(&threads[0], NULL,(void*) &updateVitalOnInterval, vT1);
+	pthread_create(&threads[1], NULL,(void*) &updateVitalOnInterval, vT2);
+	pthread_create(&threads[2], NULL,(void*) &updateVitalOnInterval, vT3);
+	pthread_create(&threads[3], NULL,(void*) &updateVitalOnInterval, vT4);
+	pthread_create(&threads[4], NULL,(void*) &updateVitalOnInterval, vT5);
+	pthread_create(&threads[5], NULL,(void*) &updateVitalOnInterval, vT6);
+
+	pthread_join(threads[5], NULL);
+}
+
+
+//Will create timer, each interval will get value for corresponding vital, and write to corresponding shmem location...
+void updateVitalOnInterval(patient_vital_thrinfo_t* vitalInfo){
+
+	printf("Test: Vital type %d, offset %d\n", vitalInfo->vitalType, vitalInfo->offset);
+
 }
 
