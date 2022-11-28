@@ -22,7 +22,7 @@ patient_vitals_t patientVitals;
 
 void initVitals(patient_vitals_t* initialVitals) {
 	if (initialVitals != NULL) {
-		patientVitals = initialVitals;
+		patientVitals = *initialVitals;
 	} else {
 		patientVitals.heartRate = DEFAULT_HEARTRATE;
 		patientVitals.systolicBP = DEFAULT_SYSTOLIC_BP;
@@ -45,7 +45,7 @@ vital_val_t getVital(vitalType_t vitalType){
 	case BLOOD_PRESSURE_SYSTOLIC:
 		returnVal.int_val = patientVitals.systolicBP;
 		break;
-	case BLOOD_PRESSURE_DIATOLIC:
+	case BLOOD_PRESSURE_DIASTOLIC:
 		returnVal.int_val = patientVitals.diastolicBP;
 		break;
 	case TEMPERATURE:
@@ -72,7 +72,7 @@ void updateVital(vitalType_t vitalType, vital_val_t newValue) {
 	case BLOOD_PRESSURE_SYSTOLIC:
 		patientVitals.systolicBP = newValue.int_val;
 		break;
-	case BLOOD_PRESSURE_DIASTOIC:
+	case BLOOD_PRESSURE_DIASTOLIC:
 		patientVitals.diastolicBP = newValue.int_val;
 		break;
 	case TEMPERATURE:
