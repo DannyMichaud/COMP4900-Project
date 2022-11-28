@@ -16,8 +16,6 @@
 #include <sys/iofunc.h>
 #include <sys/dispatch.h>
 #include "hospital_system.h"
-#include "hospital_system_data.h"
-#include "hospital_system_messages.h"
 
 
 int main(int argc, char **argv) {
@@ -68,11 +66,33 @@ void mainLoop(name_attach_t** channel){
 		//todo: extra handling depending on message sent back?
 	}
 
-	free(monitorList);
+	free(monitorList.monitors);
 }
 
-void handlePatientMessage(hospital_system_msg_to_t* msg, hospital_system_msg_from_t* rmsg, monitor_array_t* monitorList){
+int handlePatientMessage(hospital_system_msg_to_t* msg, hospital_system_msg_from_t* rmsg, monitor_array_t* monitorList){
 
+	//upon patient connection, find it a freed up monitor and
+	switch(msg->messageType){
+	case HS_MSG_CONNECT:
+
+		for(int i = 0; i < monitorList->length; i++){
+
+			if(!monitorList->monitors[i].inUse){
+				//todo: generate random server name
+
+
+				monitorList->monitors[i].inUse = 1;
+				return monitorList->monitors[i].id;
+			}
+
+		}
+
+		break;
+	default:
+		break;
+	}
+
+	return -1;
 }
 
 void handleMonitorMessage(hospital_system_msg_to_t* msg, hospital_system_msg_from_t* rmsg, monitor_array_t* monitorList){
@@ -81,13 +101,13 @@ void handleMonitorMessage(hospital_system_msg_to_t* msg, hospital_system_msg_fro
 	case HS_MSG_CONNECT:
 
 		//track new monitor with id equal to previous length of array
-		monitorList->monitors = realloc((monitorList->length + 1)*sizeof(monitor_data_t));
-		*(monitorList->monitors[monitorList->length]) = (monitor_data_t){monitorList->length, 0};
+		realloc(monitorList->monitors, (monitorList->length + 1)*sizeof(monitor_data_t));
+		monitorList->monitors[monitorList->length] = (monitor_data_t){monitorList->length, 0};
 		monitorList->length++;
 
 		//send back id to monitor for future reference
-		rmsg.messageReplyType = HS_REPLY_ID;
-		rmsg.data.int_data = monitorList->monitors[monitorList->length]->id;
+		rmsg->messageReplyType = HS_REPLY_ID;
+		rmsg->data.int_data = monitorList->monitors[monitorList->length].id;
 
 		break;
 	default:
