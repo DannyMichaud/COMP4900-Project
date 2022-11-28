@@ -31,9 +31,10 @@ $(PATIENT_DIR)patient: $(PATIENT_DIR)patient.o $(PATIENT_DIR)patient_vitals.o $(
 
 $(MONITOR_DIR)monitor: $(MONITOR_DIR)monitor.o $(SHMEM_DIR)shared_memory_helpers.o
 
-$(HOSPITAL_SYSTEM_DIR)hospital_system: $(HOSPITAL_SYSTEM_DIR)hospital_system.o
+$(HOSPITAL_SYSTEM_DIR)hospital_system: $(HOSPITAL_SYSTEM_DIR)hospital_system.o $(SHMEM_DIR)shared_memory_helpers.o
 
-hospital_system.o: $(HOSPITAL_SYSTEM_DIR)hospital_system.c $(HOSPITAL_SYSTEM_DIR)hospital_system.h $(HOSPITAL_SYSTEM_DIR)hospital_system_data.h $(HOSPITAL_SYSTEM_DIR)hospital_system_messages.h  $(HOSPITAL_SYSTEM_DIR)hospital_system_address.h
+hospital_system.o: $(HOSPITAL_SYSTEM_DIR)hospital_system.c $(HOSPITAL_SYSTEM_DIR)hospital_system.h $(HOSPITAL_SYSTEM_DIR)hospital_system_data.h $(HOSPITAL_SYSTEM_DIR)hospital_system_messages.h \
+		$(HOSPITAL_SYSTEM_DIR)hospital_system_address.h $(SHMEM_DIR)shared_memory.h
 monitor.o: $(MONITOR_DIR)monitor.c $(MONITOR_DIR)monitor.h $(SHMEM_DIR)shared_memory.h $(HOSPITAL_SYSTEM_DIR)hospital_system_messages.h  $(HOSPITAL_SYSTEM_DIR)hospital_system_address.h
 patient.o: $(PATIENT_DIR)patient.c $(PATIENT_DIR)patient.h $(PATIENT_DIR)patient_vitals.h $(SHMEM_DIR)shared_memory.h
 patient_vitals.o: $(PATIENT_DIR)patient_vitals.c $(PATIENT_DIR)patient.h $(PATIENT_DIR)patient_vitals.h $(SHMEM_DIR)shared_memory.h

@@ -4,6 +4,8 @@
 
 #define PATIENT_SHMEM_SIZE 4096
 
+#define HS_MONITOR_SHMEM_SIZE 4096
+
 //for shared memory offsets on monitored values
 #define PATIENT_SHMEM_OFFSET_HEARTBEAT 100
 #define PATIENT_SHMEM_OFFSET_BLOOD_PRESSURE_SYSTOLIC 110
@@ -26,6 +28,9 @@
 
 #define GET_SHMEM_MSG_TYPE (_IO_MAX+200)
 
+//for shared memory between monitor and hospital system
+#define HS_SHMEM_OFFSET_PATIENT_NAME 100
+
 // ask for a shared_mem_bytes sized object
 typedef struct get_shmem_msg {
 	uint16_t type;
@@ -38,6 +43,7 @@ typedef struct get_shmem_resp {
 } get_shmem_resp_t;
 
 
+int create_shared_memory(unsigned nbytes, int client_pid, void **ptr, shm_handle_t *handle);
 
 void write_shmem_int(void* shmem_ptr, int int_val, uint16_t offset, uint8_t range);
 

@@ -42,6 +42,34 @@ void connectToHospitalSystem(){
 
 	printf("Id: %d\n", msgReply.data.int_data);
 
+	//create thread to monitor shared memory
+	pthread_t thread;
+
+	pthread_create(&thread, NULL,(void*) &monitorHospitalSystemSharedMemory, msgReply.data2.shmem_handle);
+
+
+}
+
+void monitorHospitalSystemSharedMemory(shm_handle_t shmem_handle){
+
+    //open handle to get fd
+	int fd = shm_open_handle(shmem_handle, O_RDWR);
+
+    //map the shared memory
+	void *monitor_shmem_ptr = mmap(NULL, HS_MONITOR_SHMEM_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+
+	/* once mapped, we don't need the fd anymore */
+	close(fd);
+
+	while(1){
+		char* message = read_shmem(monitor_shmem_ptr, HS_SHMEM_OFFSET_PATIENT_NAME);
+
+		printf("Read patient name from server: %s\n", message);
+
+		free(message);
+
+		sleep(1);
+	}
 
 }
 

@@ -15,7 +15,7 @@ typedef enum {
 //type of reply being sent
 typedef enum {
 	HS_REPLY_SERVER_NAME = 0, //for sending server id to be used by patient
-	HS_REPLY_ID = 1, //
+	HS_REPLY_SETUP = 1, //for setting up monitor
 } hs_msgReply_t;
 
 //for message sent to hospital server
@@ -30,11 +30,13 @@ typedef union hospital_system_msg_data {
 	int int_data;
 	float float_data;
 	char string_data[30];
+	shm_handle_t shmem_handle;
 } hospital_system_msg_data_t;
 
 //for message received from hospital server
 typedef struct hospital_system_msg_from {
 	hs_msgReply_t messageReplyType;
 	hospital_system_msg_data_t data;
+	hospital_system_msg_data_t data2; //this totally won't be impossible to troubleshoot...
 } hospital_system_msg_from_t;
 
