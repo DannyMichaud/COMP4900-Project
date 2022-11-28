@@ -17,10 +17,17 @@ typedef struct patient_vital_thrinfo {
 	uint16_t offset;
 } patient_vital_thrinfo_t;
 
+typedef union {
+	uint16_t int_val;
+	float float_val;
+} vital_val_t;
+
 //start the patient server, given the provided server name
 void startPatientServer(char* patientServerName);
 
+
 //updates the vital thread
 void updateVitalOnInterval(patient_vital_thrinfo_t* vitalInfo);
+
 
 

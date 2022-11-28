@@ -16,6 +16,7 @@
 #include <sys/iofunc.h>
 #include <sys/dispatch.h>
 #include "patient.h"
+#include "patient_vitals.h"
 
 /* create a secured shared-memory object, updating a handle to it. */
 
@@ -131,8 +132,6 @@ void initVitalThreads(pthread_t* threads){
 	pthread_create(&threads[3], NULL,(void*) &updateVitalOnInterval, vT4);
 	pthread_create(&threads[4], NULL,(void*) &updateVitalOnInterval, vT5);
 	pthread_create(&threads[5], NULL,(void*) &updateVitalOnInterval, vT6);
-
-	pthread_join(threads[5], NULL);
 }
 
 
@@ -141,5 +140,17 @@ void updateVitalOnInterval(patient_vital_thrinfo_t* vitalInfo){
 
 	printf("Test: Vital type %d, offset %d\n", vitalInfo->vitalType, vitalInfo->offset);
 
+	while(1){
+		vital_val_t vitalValue = getVital(vitalInfo->vitalType);
+
+		if(vitalInfo->vitalType == TEMPERATURE){
+			printf("Temperature: %f\n", vitalValue.float_val);
+		}
+		else {
+			printf("Vital: %d\n", vitalValue.int_val);
+		}
+
+		sleep(1);
+	}
 }
 
