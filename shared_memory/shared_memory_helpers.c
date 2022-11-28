@@ -69,8 +69,6 @@ void write_shmem_float(void* shmem_ptr, float float_val, uint16_t offset, uint8_
 
 void write_shmem(void* shmem_ptr, char* output, uint16_t offset, uint8_t range){
 
-	printf("%s %d %d\n", output, offset, strlen(output));
-
 	memcpy(shmem_ptr + offset, output, strlen(output)+1);
 
 }
