@@ -16,7 +16,7 @@
 #include <sys/iofunc.h>
 #include <sys/dispatch.h>
 #include "monitor.h"
-#include "../patient/shared_memory.h"
+#include "../shared_memory/shared_memory.h"
 
 int main(int argc, char **argv) {
 
@@ -52,6 +52,13 @@ void connectToPatient(char* patientServerName){
 	close(fd);
 
 	printf("Response code for get message: %d\n", status);
+
+	sleep(3);
+
+	//just a test
+	int heartRate = read_shmem_int(patient_shmem_ptr, PATIENT_SHMEM_OFFSET_HEARTBEAT);
+
+	printf("Test reading heartbeat from patient %d\n", heartRate);
 
 	munmap(patient_shmem_ptr, 4096);
 }

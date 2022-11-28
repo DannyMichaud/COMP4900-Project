@@ -32,3 +32,10 @@ void write_shmem_int(void* shmem_ptr, int int_val, uint16_t offset, uint8_t rang
 void write_shmem_float(void* shmem_ptr, float float_val, uint16_t offset, uint8_t range);
 
 void write_shmem(void* shmem_ptr, char* output, uint16_t offset, uint8_t range);
+
+char* read_shmem(void* shmem_ptr, uint16_t offset);
+
+int read_shmem_int(void* shmem_ptr, uint16_t offset);
+
+float read_shmem_float(void* shmem_ptr, uint16_t offset);
+

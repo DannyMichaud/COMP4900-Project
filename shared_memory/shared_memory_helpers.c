@@ -9,6 +9,7 @@
 #include <string.h>
 #include <sys/iofunc.h>
 #include <sys/dispatch.h>
+#include "shared_memory.h"
 
 
 /* shared_memory_helpers.c
@@ -18,6 +19,8 @@
  *
  *
  * */
+
+/* Writing */
 
 void write_shmem_int(void* shmem_ptr, int int_val, uint16_t offset, uint8_t range){
 	int length = snprintf(NULL, 0, "%d", int_val);
@@ -48,3 +51,37 @@ void write_shmem(void* shmem_ptr, char* output, uint16_t offset, uint8_t range){
 
 }
 
+/* Reading */
+
+int read_shmem_int(void *shmem_ptr, uint16_t offset){
+
+	char* int_string = read_shmem(shmem_ptr, offset);
+
+	int return_val = atoi(int_string);
+
+	free(int_string);
+
+	return return_val;
+}
+
+float read_shmem_float(void* shmem_ptr, uint16_t offset){
+
+	char* float_string = read_shmem(shmem_ptr, offset);
+
+	float return_val = atof(float_string);
+
+	free(float_string);
+
+	return return_val;
+}
+
+char* read_shmem(void* shmem_ptr, uint16_t offset){
+
+	int length = snprintf(NULL, 0, "%s", shmem_ptr + offset);
+
+	char* return_string = malloc(length+1);
+
+	snprintf(return_string, length + 1, "%s", shmem_ptr + offset);
+
+	return return_string;
+}
