@@ -25,16 +25,16 @@ typedef struct hospital_system_msg_to {
 	int id;
 } hospital_system_msg_to_t;
 
-//for message received from hospital server
-typedef struct hospital_system_msg_from {
-	hs_msgReply_t messageReplyType;
-	hospital_system_msg_data_t data;
-} hospital_system_msg_from_t;
-
 //data for message received from hospital server
 typedef union hospital_system_msg_data {
 	int int_data;
 	float float_data;
 	char string_data[30];
 } hospital_system_msg_data_t;
+
+//for message received from hospital server
+typedef struct hospital_system_msg_from {
+	hs_msgReply_t messageReplyType;
+	hospital_system_msg_data_t data;
+} hospital_system_msg_from_t;
 
