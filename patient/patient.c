@@ -137,8 +137,6 @@ void initVitalThreads(pthread_t* threads, void* ptr){
 //Will create timer, each interval will get value for corresponding vital, and write to corresponding shmem location...
 void updateVitalOnInterval(patient_vital_thrinfo_t* vitalInfo){
 
-	printf("Test: Vital type %d, offset %d\n", vitalInfo->vitalType, vitalInfo->offset);
-
 	while(1){
 		vital_val_t vitalValue = getVital(vitalInfo->vitalType);
 

@@ -1,5 +1,5 @@
 
-#include "shared_memory.h"
+#include "../shared_memory/shared_memory.h"
 
 //the type of vital we are updating
 typedef enum {
