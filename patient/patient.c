@@ -18,29 +18,7 @@
 #include "patient.h"
 #include "patient_vitals.h"
 
-/* create a secured shared-memory object, updating a handle to it. */
 
-int create_shared_memory(unsigned nbytes, int client_pid, void **ptr, shm_handle_t *handle) {
-
-	/* create an anonymous shared memory object */
-	int fd = shm_open(SHM_ANON, O_RDWR|O_CREAT, 0600);
-
-	/* allocate the memory for the object */
-	ftruncate(fd, nbytes);
-
-	/* get a local mapping to the object */
-	*ptr = mmap(NULL, nbytes, PROT_NOCACHE|PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
-	/* print fd and client pid */
-	printf("Fd %d, client pid %d\n", fd, client_pid);
-
-	/* get a handle for the client to map the object */
-	shm_create_handle(fd, client_pid, O_RDWR, handle, NULL);
-
-	/* we no longer need the fd, so cleanup */
-	close(fd);
-
-	return 0;
-}
 
 typedef union
 {
