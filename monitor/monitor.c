@@ -73,10 +73,60 @@ void connectToPatient(char* patientServerName){
 
 	sleep(3);
 
-	//just a test
-	int heartRate = read_shmem_int(patient_shmem_ptr, PATIENT_SHMEM_OFFSET_HEARTBEAT);
-
-	printf("Test reading heartbeat from patient %d\n", heartRate);
+	// Monitor patient vitals
+	monitorPatientVitals(patient_shmem_ptr);
 
 	munmap(patient_shmem_ptr, 4096);
+}
+
+void monitorPatientVitals(void* shmem_ptr) {
+
+	// Get vitals
+	int heartrate, systolicBP, diastolicBP, respiration, oxygenSaturation;
+	float temperature;
+
+	while(1) {
+		heartrate = read_shmem_int(shmem_ptr, PATIENT_SHMEM_OFFSET_HEARTBEAT);
+		systolicBP = read_shmem_int(shmem_ptr, PATIENT_SHMEM_OFFSET_BLOOD_PRESSURE_SYSTOLIC);
+		diastolicBP = read_shmem_int(shmem_ptr, PATIENT_SHMEM_OFFSET_BLOOD_PRESSURE_DIASTOLIC);
+		temperature = read_shmem_float(shmem_ptr, PATIENT_SHMEM_OFFSET_TEMPERATURE);
+		respiration = read_shmem_int(shmem_ptr, PATIENT_SHMEM_OFFSET_RESPIRATION);
+		oxygenSaturation = read_shmem_int(shmem_ptr, PATIENT_SHMEM_OFFSET_OXYGEN_SATURATION);
+
+		// Check patient heart rate
+		if (heartrate < PATIENT_HEARTBEAT_LOWER_LIMIT || heartrate > PATIENT_HEARTBEAT_UPPER_LIMIT) {
+			// Send message to hospital system (critical)
+			printf("(TEMP) Heartrate critical: %d\n", heartrate);
+		}
+
+		// Check patient systolic blood pressure
+		if (systolicBP < PATIENT_SYSTOLIC_BP_LOWER_LIMIT || systolicBP > PATIENT_SYSTOLIC_BP_UPPER_LIMIT) {
+			// Send message to hospital system (critical)
+			printf("(TEMP) Systolic BP critical: %d\n", systolicBP);
+		}
+
+		// Check patient diastolic blood pressure
+		if (diastolicBP < PATIENT_DIASTOLIC_BP_LOWER_LIMIT || diastolicBP > PATIENT_DIASTOLIC_BP_UPPER_LIMIT) {
+			// Send message to hospital system (critical)
+			printf("(TEMP) Diastolic BP critical: %d\n", diastolicBP);
+		}
+
+		// Check patient temperature
+		if (temperature < PATIENT_TEMPERATURE_LOWER_LIMIT || temperature > PATIENT_TEMPERATURE_UPPER_LIMIT) {
+			// Send message to hospital system (critical)
+			printf("(TEMP) Temperature critical: %.1f\n", temperature);
+		}
+
+		// Check patient respiration
+		if (respiration < PATIENT_RESPIRATION_LOWER_LIMIT || respiration > PATIENT_RESPIRATION_UPPER_LIMIT) {
+			// Send message to hospital system (critical)
+			printf("(TEMP) Respiration critical: %d\n", respiration);
+		}
+
+		// Check patient oxygen saturation
+		if (oxygenSaturation > PATIENT_OXYGEN_SATURATION_LOWER_LIMIT) {
+			// Send message to hospital system (critical)
+			printf("(TEMP) Respiration critical: %d\n", respiration);
+		}
+	}
 }

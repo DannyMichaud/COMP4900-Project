@@ -33,7 +33,6 @@ int main(int argc, char **argv) {
 
 	startPatientServer("patient-name-temp");
 
-
 	return 0;
 }
 
@@ -55,7 +54,6 @@ void startPatientServer(char* patientServerName){
 			//received a pulse
 
 		} else {
-
 			handleMessageFromMonitor(msg, pid, rcvid);
 		}
 
@@ -84,50 +82,57 @@ void handleMessageFromMonitor(recv_buf_t msg, pid_t pid, int rcvid){
 		initVitalThreads(threads, ptr);
 
 		break;
+	default:
+		break;
 	}
 }
 
 void initVitalThreads(pthread_t* threads, void* ptr){
 
-	patient_vital_thrinfo_t* vT1 = malloc(sizeof(patient_vital_thrinfo_t));
-	*vT1 = (patient_vital_thrinfo_t){HEARTBEAT, PATIENT_SHMEM_OFFSET_HEARTBEAT, 10, ptr};
-	patient_vital_thrinfo_t* vT2 = malloc(sizeof(patient_vital_thrinfo_t));
-	*vT2 = (patient_vital_thrinfo_t){BLOOD_PRESSURE_SYSTOLIC, PATIENT_SHMEM_OFFSET_BLOOD_PRESSURE_SYSTOLIC, 5, ptr};
-	patient_vital_thrinfo_t* vT3 = malloc(sizeof(patient_vital_thrinfo_t));
-	*vT3 = (patient_vital_thrinfo_t){BLOOD_PRESSURE_DIATOLIC, PATIENT_SHMEM_OFFSET_BLOOD_PRESSURE_DIATOLIC, 5, ptr};
-	patient_vital_thrinfo_t* vT4 = malloc(sizeof(patient_vital_thrinfo_t));
-	*vT4 = (patient_vital_thrinfo_t){TEMPERATURE, PATIENT_SHMEM_OFFSET_TEMPERATURE, 10, ptr};
-	patient_vital_thrinfo_t* vT5 = malloc(sizeof(patient_vital_thrinfo_t));
-	*vT5 = (patient_vital_thrinfo_t){RESPIRATION, PATIENT_SHMEM_OFFSET_RESPIRATION, 10, ptr};
-	patient_vital_thrinfo_t* vT6 = malloc(sizeof(patient_vital_thrinfo_t));
-	*vT6 = (patient_vital_thrinfo_t){OXYGEN_SATURATION, PATIENT_SHMEM_OFFSET_OXYGEN_SATURATION, 10, ptr};
+	patient_vital_thrinfo_t* heartbeatThread = malloc(sizeof(patient_vital_thrinfo_t));
+	*heartbeatThread = (patient_vital_thrinfo_t){HEARTBEAT, PATIENT_SHMEM_OFFSET_HEARTBEAT, 10, ptr};
+	patient_vital_thrinfo_t* systolicBPThread = malloc(sizeof(patient_vital_thrinfo_t));
+	*systolicBPThread = (patient_vital_thrinfo_t){BLOOD_PRESSURE_SYSTOLIC, PATIENT_SHMEM_OFFSET_BLOOD_PRESSURE_SYSTOLIC, 5, ptr};
+	patient_vital_thrinfo_t* diastolicBPThread = malloc(sizeof(patient_vital_thrinfo_t));
+	*diastolicBPThread = (patient_vital_thrinfo_t){BLOOD_PRESSURE_DIASTOLIC, PATIENT_SHMEM_OFFSET_BLOOD_PRESSURE_DIASTOLIC, 5, ptr};
+	patient_vital_thrinfo_t* temperatureThread = malloc(sizeof(patient_vital_thrinfo_t));
+	*temperatureThread = (patient_vital_thrinfo_t){TEMPERATURE, PATIENT_SHMEM_OFFSET_TEMPERATURE, 10, ptr};
+	patient_vital_thrinfo_t* respirationThread = malloc(sizeof(patient_vital_thrinfo_t));
+	*respirationThread = (patient_vital_thrinfo_t){RESPIRATION, PATIENT_SHMEM_OFFSET_RESPIRATION, 10, ptr};
+	patient_vital_thrinfo_t* oxygenSaturationThread = malloc(sizeof(patient_vital_thrinfo_t));
+	*oxygenSaturationThread = (patient_vital_thrinfo_t){OXYGEN_SATURATION, PATIENT_SHMEM_OFFSET_OXYGEN_SATURATION, 10, ptr};
 
 	//create thread for each vital
-	pthread_create(&threads[0], NULL,(void*) &updateVitalOnInterval, vT1);
-	pthread_create(&threads[1], NULL,(void*) &updateVitalOnInterval, vT2);
-	pthread_create(&threads[2], NULL,(void*) &updateVitalOnInterval, vT3);
-	pthread_create(&threads[3], NULL,(void*) &updateVitalOnInterval, vT4);
-	pthread_create(&threads[4], NULL,(void*) &updateVitalOnInterval, vT5);
-	pthread_create(&threads[5], NULL,(void*) &updateVitalOnInterval, vT6);
+	pthread_create(&threads[0], NULL,(void*) &getVitalOnInterval, heartbeatThread);
+	pthread_create(&threads[1], NULL,(void*) &getVitalOnInterval, systolicBPThread);
+	pthread_create(&threads[2], NULL,(void*) &getVitalOnInterval, diastolicBPThread);
+	pthread_create(&threads[3], NULL,(void*) &getVitalOnInterval, temperatureThread);
+	pthread_create(&threads[4], NULL,(void*) &getVitalOnInterval, respirationThread);
+	pthread_create(&threads[5], NULL,(void*) &getVitalOnInterval, oxygenSaturationThread);
 }
 
 
-//Will create timer, each interval will get value for corresponding vital, and write to corresponding shmem location...
-void updateVitalOnInterval(patient_vital_thrinfo_t* vitalInfo){
-
+// Will create timer, each interval will get value for corresponding vital, and write to corresponding shmem location...
+void getVitalOnInterval(patient_vital_thrinfo_t* vitalInfo){
 	while(1){
 		vital_val_t vitalValue = getVital(vitalInfo->vitalType);
 
 		if(vitalInfo->vitalType == TEMPERATURE){
 			write_shmem_float(vitalInfo->shmem_ptr, vitalValue.float_val, vitalInfo->offset, vitalInfo->range);
-			printf("Temperature: %s\n", vitalInfo->shmem_ptr + vitalInfo->offset);
+			printf("Temperature: %s\n", (char *) vitalInfo->shmem_ptr + vitalInfo->offset);
 		}
 		else {
 			write_shmem_int(vitalInfo->shmem_ptr, vitalValue.int_val, vitalInfo->offset, vitalInfo->range);
-			printf("Vital: %s\n", vitalInfo->shmem_ptr + vitalInfo->offset);
+			printf("Vital: %s\n", (char *) vitalInfo->shmem_ptr + vitalInfo->offset);
 		}
 
 		sleep(1);
+	}
+}
+
+void updateVitalOnInterval(patient_vital_thrinfo_t* vitalInfo) {
+	while(1) {
+
 	}
 }
 
