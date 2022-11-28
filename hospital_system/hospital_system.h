@@ -1,7 +1,6 @@
 #include "hospital_system_data.h"
 #include "hospital_system_messages.h"
 
-#define HOSPITAL_SERVER_NAME "hospitalSystem"
 
 void startServer(name_attach_t**);
 

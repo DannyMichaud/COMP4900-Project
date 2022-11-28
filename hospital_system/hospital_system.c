@@ -16,6 +16,7 @@
 #include <sys/iofunc.h>
 #include <sys/dispatch.h>
 #include "hospital_system.h"
+#include "hospital_system_address.h"
 
 
 int main(int argc, char **argv) {
@@ -38,7 +39,8 @@ void startServer(name_attach_t** channel){
 
 void mainLoop(name_attach_t** channel){
 
-	monitor_array_t monitorList;
+	monitor_array_t monitorList = {0, NULL};
+	monitorList.monitors = malloc(sizeof(monitor_data_t));
 
 	while(1){
 
@@ -47,6 +49,12 @@ void mainLoop(name_attach_t** channel){
 		int rcvid = MsgReceive((*channel)->chid, &msg, sizeof(msg), NULL);
 
 		hospital_system_msg_from_t rmsg;
+
+		printf("Received msg, rcvid %d\n", rcvid);
+
+		if(rcvid == -1){
+			continue;
+		}
 
 		//handle message depending on whether it came from patient or monitor
 		switch(msg.messageSender){
@@ -101,16 +109,18 @@ void handleMonitorMessage(hospital_system_msg_to_t* msg, hospital_system_msg_fro
 	case HS_MSG_CONNECT:
 
 		//track new monitor with id equal to previous length of array
-		realloc(monitorList->monitors, (monitorList->length + 1)*sizeof(monitor_data_t));
+		monitorList->monitors = realloc(monitorList->monitors, (monitorList->length + 1)*sizeof(monitor_data_t));
 		monitorList->monitors[monitorList->length] = (monitor_data_t){monitorList->length, 0};
 		monitorList->length++;
 
 		//send back id to monitor for future reference
 		rmsg->messageReplyType = HS_REPLY_ID;
-		rmsg->data.int_data = monitorList->monitors[monitorList->length].id;
+		rmsg->data.int_data = monitorList->monitors[monitorList->length-1].id;
 
 		break;
 	default:
 		break;
 	}
 }
+
+

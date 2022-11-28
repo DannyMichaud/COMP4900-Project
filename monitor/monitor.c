@@ -17,14 +17,32 @@
 #include <sys/dispatch.h>
 #include "monitor.h"
 #include "../shared_memory/shared_memory.h"
+#include "../hospital_system/hospital_system_address.h"
+#include "../hospital_system/hospital_system_messages.h"
 
 int main(int argc, char **argv) {
 
 	//todo: receive server name from hospital server
+	connectToHospitalSystem();
+
 
 	connectToPatient("patient-name-temp");
 
 	return 0;
+}
+
+void connectToHospitalSystem(){
+	/* find our server to get a coid*/
+	int coid = name_open(HOSPITAL_SERVER_NAME, 0);
+
+	hospital_system_msg_to_t msg = {SOURCE_MONITOR, HS_MSG_CONNECT};
+	hospital_system_msg_from_t msgReply;
+
+	int status = MsgSend(coid, &msg, sizeof(hospital_system_msg_to_t), &msgReply, sizeof(hospital_system_msg_from_t));
+
+	printf("Id: %d\n", msgReply.data.int_data);
+
+
 }
 
 void connectToPatient(char* patientServerName){
