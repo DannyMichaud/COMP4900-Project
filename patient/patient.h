@@ -15,6 +15,8 @@ typedef enum {
 typedef struct patient_vital_thrinfo {
 	vitalType_t vitalType;
 	uint16_t offset;
+	uint8_t range;
+	void* shmem_ptr;
 } patient_vital_thrinfo_t;
 
 typedef union {

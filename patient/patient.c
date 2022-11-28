@@ -97,33 +97,32 @@ void handleMessageFromMonitor(recv_buf_t msg, pid_t pid, int rcvid){
 
 		create_shared_memory(msg.get_shmem.shared_mem_bytes, pid, &ptr, &rmsg.mem_handle);
 
-
 		//reply to client with the handle
 		int result = MsgReply(rcvid, EOK, &rmsg, sizeof(get_shmem_resp_t));
 
 		//todo - set up threads to update shared memory
 		pthread_t threads[5];
 
-		initVitalThreads(threads);
+		initVitalThreads(threads, ptr);
 
 		break;
 	}
 }
 
-void initVitalThreads(pthread_t* threads){
+void initVitalThreads(pthread_t* threads, void* ptr){
 
 	patient_vital_thrinfo_t* vT1 = malloc(sizeof(patient_vital_thrinfo_t));
-	*vT1 = (patient_vital_thrinfo_t){HEARTBEAT, PATIENT_SHMEM_OFFSET_HEARTBEAT };
+	*vT1 = (patient_vital_thrinfo_t){HEARTBEAT, PATIENT_SHMEM_OFFSET_HEARTBEAT, 10, ptr};
 	patient_vital_thrinfo_t* vT2 = malloc(sizeof(patient_vital_thrinfo_t));
-	*vT2 = (patient_vital_thrinfo_t){BLOOD_PRESSURE_SYSTOLIC, PATIENT_SHMEM_OFFSET_BLOOD_PRESSURE_SYSTOLIC };
+	*vT2 = (patient_vital_thrinfo_t){BLOOD_PRESSURE_SYSTOLIC, PATIENT_SHMEM_OFFSET_BLOOD_PRESSURE_SYSTOLIC, 5, ptr};
 	patient_vital_thrinfo_t* vT3 = malloc(sizeof(patient_vital_thrinfo_t));
-	*vT3 = (patient_vital_thrinfo_t){BLOOD_PRESSURE_DIATOLIC, PATIENT_SHMEM_OFFSET_BLOOD_PRESSURE_DIATOLIC};
+	*vT3 = (patient_vital_thrinfo_t){BLOOD_PRESSURE_DIATOLIC, PATIENT_SHMEM_OFFSET_BLOOD_PRESSURE_DIATOLIC, 5, ptr};
 	patient_vital_thrinfo_t* vT4 = malloc(sizeof(patient_vital_thrinfo_t));
-	*vT4 = (patient_vital_thrinfo_t){TEMPERATURE, PATIENT_SHMEM_OFFSET_TEMPERATURE};
+	*vT4 = (patient_vital_thrinfo_t){TEMPERATURE, PATIENT_SHMEM_OFFSET_TEMPERATURE, 10, ptr};
 	patient_vital_thrinfo_t* vT5 = malloc(sizeof(patient_vital_thrinfo_t));
-	*vT5 = (patient_vital_thrinfo_t){RESPIRATION, PATIENT_SHMEM_OFFSET_RESPIRATION};
+	*vT5 = (patient_vital_thrinfo_t){RESPIRATION, PATIENT_SHMEM_OFFSET_RESPIRATION, 10, ptr};
 	patient_vital_thrinfo_t* vT6 = malloc(sizeof(patient_vital_thrinfo_t));
-	*vT6 = (patient_vital_thrinfo_t){OXYGEN_SATURATION, PATIENT_SHMEM_OFFSET_OXYGEN_SATURATION};
+	*vT6 = (patient_vital_thrinfo_t){OXYGEN_SATURATION, PATIENT_SHMEM_OFFSET_OXYGEN_SATURATION, 10, ptr};
 
 	//create thread for each vital
 	pthread_create(&threads[0], NULL,(void*) &updateVitalOnInterval, vT1);
@@ -144,10 +143,12 @@ void updateVitalOnInterval(patient_vital_thrinfo_t* vitalInfo){
 		vital_val_t vitalValue = getVital(vitalInfo->vitalType);
 
 		if(vitalInfo->vitalType == TEMPERATURE){
-			printf("Temperature: %f\n", vitalValue.float_val);
+			write_shmem_float(vitalInfo->shmem_ptr, vitalValue.float_val, vitalInfo->offset, vitalInfo->range);
+			printf("Temperature: %s\n", vitalInfo->shmem_ptr + vitalInfo->offset);
 		}
 		else {
-			printf("Vital: %d\n", vitalValue.int_val);
+			write_shmem_int(vitalInfo->shmem_ptr, vitalValue.int_val, vitalInfo->offset, vitalInfo->range);
+			printf("Vital: %s\n", vitalInfo->shmem_ptr + vitalInfo->offset);
 		}
 
 		sleep(1);
