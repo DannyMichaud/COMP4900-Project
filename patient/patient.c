@@ -17,6 +17,8 @@
 #include <sys/dispatch.h>
 #include "patient.h"
 #include "patient_vitals.h"
+#include "../hospital_system/hospital_system_address.h"
+#include "../hospital_system/hospital_system_messages.h"
 
 
 
@@ -31,9 +33,28 @@ int main(int argc, char **argv) {
 
 	//todo: request hospital server for server name
 
-	startPatientServer("patient-name-temp");
+	getServerNameFromHospitalSystem();
 
 	return 0;
+}
+
+void getServerNameFromHospitalSystem(){
+
+	/* find our server to get a coid*/
+	int coid = name_open(HOSPITAL_SERVER_NAME, 0);
+
+	//get our server name from the hospital system
+	hospital_system_msg_to_t msg = {SOURCE_PATIENT, HS_MSG_CONNECT};
+	hospital_system_msg_from_t msgReply;
+
+	int status = MsgSend(coid, &msg, sizeof(hospital_system_msg_to_t), &msgReply, sizeof(hospital_system_msg_from_t));
+
+	//close connection to hospital system as it is no longer necessary
+	name_close(coid);
+
+	printf("Starting patient with name %s\n", msgReply.data.string_data);
+
+	startPatientServer(msgReply.data.string_data);
 }
 
 void startPatientServer(char* patientServerName){
@@ -47,6 +68,8 @@ void startPatientServer(char* patientServerName){
 		struct _msg_info info;
 
 		int rcvid = MsgReceive(patientChannel->chid, &msg, sizeof(msg), &info);
+
+		printf("Received message from monitor\n");
 
 		pid_t pid = info.pid;
 

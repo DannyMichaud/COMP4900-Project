@@ -22,11 +22,8 @@
 
 int main(int argc, char **argv) {
 
-	//todo: receive server name from hospital server
+	//start by connecting to hospital system to get registered
 	connectToHospitalSystem();
-
-
-	connectToPatient("patient-name-temp");
 
 	return 0;
 }
@@ -47,7 +44,10 @@ void connectToHospitalSystem(){
 
 	pthread_create(&thread, NULL,(void*) &monitorHospitalSystemSharedMemory, msgReply.data2.shmem_handle);
 
-
+	//temporary until proper client loop set up
+	while(1){
+		sleep(1);
+	}
 }
 
 void monitorHospitalSystemSharedMemory(shm_handle_t shmem_handle){
@@ -66,6 +66,15 @@ void monitorHospitalSystemSharedMemory(shm_handle_t shmem_handle){
 
 		printf("Read patient name from server: %s\n", message);
 
+		//if server name is ready, connect on new thread and end this one
+		if(strcmp(message, "No patient") != 0){
+			pthread_t thread;
+
+			pthread_create(&thread, NULL,(void*) &connectToPatient, message);
+			free(message);
+			break;
+		}
+
 		free(message);
 
 		sleep(1);
@@ -76,8 +85,12 @@ void monitorHospitalSystemSharedMemory(shm_handle_t shmem_handle){
 void connectToPatient(char* patientServerName){
 
 	/* find our server to get a coid*/
-	int coid = name_open(patientServerName, 0);
-
+	int coid = -1;
+	//may have to try a few times while things get set up
+	while(coid == -1){
+		coid = name_open(patientServerName, 0);
+		sleep(1);
+	}
 	/* request for shared memory */
 	get_shmem_msg_t get_msg;
 	get_shmem_resp_t get_msg_reply;

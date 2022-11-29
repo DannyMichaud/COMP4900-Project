@@ -91,6 +91,18 @@ int handlePatientMessage(hospital_system_msg_to_t* msg, hospital_system_msg_from
 			if(!monitorList->monitors[i].inUse){
 				//todo: generate random server name
 
+				char* patientServerName = generatePatientServerName();
+
+				printf("Patient server name: %s\n", patientServerName);
+
+				//set up reply with server name to patient
+				rmsg->messageReplyType = HS_REPLY_SERVER_NAME;
+				strcpy(rmsg->data.string_data, patientServerName);
+
+				//also write to monitor's shared memory so it can start reading from the patient
+				write_shmem(monitorList->monitors[i].shmem_ptr, patientServerName, HS_SHMEM_OFFSET_PATIENT_NAME, 20);
+
+				free(patientServerName);
 
 				monitorList->monitors[i].inUse = 1;
 				return monitorList->monitors[i].id;
@@ -121,10 +133,6 @@ void handleMonitorMessage(hospital_system_msg_to_t* msg, hospital_system_msg_fro
 		//write default value to patient name section
 		write_shmem(shmem_ptr, "No patient\0", HS_SHMEM_OFFSET_PATIENT_NAME, 20);
 
-		printf("%s\n", read_shmem(shmem_ptr, HS_SHMEM_OFFSET_PATIENT_NAME));
-
-
-
 		//NOTE: ANY new shared memory values we want to add MUST be initialized here!!!! Or the monitor will segfault!!1!111!
 
 		//track new monitor with id equal to previous length of array
@@ -141,6 +149,25 @@ void handleMonitorMessage(hospital_system_msg_to_t* msg, hospital_system_msg_fro
 	default:
 		break;
 	}
+}
+
+char* generatePatientServerName(){
+
+	char* serverName = malloc(17);
+
+	time_t t;
+	srand((unsigned)time(&t));
+
+	memcpy(serverName, PATIENT_SERVER_NAME_HEADER, strlen(PATIENT_SERVER_NAME_HEADER));
+
+	//append random lowercase characters to finish the random server name
+	for(int i = strlen(PATIENT_SERVER_NAME_HEADER); i < 16; i++){
+		serverName[i] = (char)rand()%26 + 97;
+	}
+
+	serverName[16] = '\0';
+
+	return serverName;
 }
 
 
