@@ -169,5 +169,6 @@ void monitorPatientVitals(void* shmem_ptr) {
 			// Send message to hospital system (critical)
 			printf("(TEMP) Respiration critical: %d\n", respiration);
 		}
+		sleep(1);
 	}
 }
