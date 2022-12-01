@@ -16,4 +16,4 @@ typedef struct patient_vitals {
 	uint8_t oxygenSaturation;
 } patient_vitals_t;
 
-vital_val_t getVital(vitalType_t vitalType);
+

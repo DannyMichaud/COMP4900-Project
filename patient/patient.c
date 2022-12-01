@@ -17,6 +17,7 @@
 #include <sys/dispatch.h>
 #include "patient.h"
 #include "patient_vitals.h"
+#include "patient_vitals_utils.h"
 #include "../hospital_system/hospital_system_address.h"
 #include "../hospital_system/hospital_system_messages.h"
 
@@ -31,8 +32,8 @@ patientHealth_t patientHealth;
 
 int main(int argc, char **argv) {
 	// TEMP: set patient health based on args
-	patientHealth = argc > 1 ? HEALTHY : argv[1];
-
+	//patientHealth = (argc > 1) ? HEALTHY : argv[1];
+	patientHealth = HEALTHY;
 	//todo: request hospital server for server name
 
 	getServerNameFromHospitalSystem();
@@ -78,6 +79,7 @@ void startPatientServer(char* patientServerName){
 		printf("Received message from monitor\n");
 
 		pid_t pid = info.pid;
+	}
 
 	while(1){
 		if (rcvid == 0) {
@@ -178,5 +180,7 @@ void updateVitalOnInterval(patient_vital_thrinfo_t* vitalInfo) {
 		}
 		sleep(1);
 	}
+
+	return;
 }
 
