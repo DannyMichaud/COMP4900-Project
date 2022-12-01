@@ -7,4 +7,4 @@ void monitorHospitalSystemSharedMemory(shm_handle_t handle);
 void connectToPatient(char* patientServerName);
 
 // Check patient vitals
-void monitorPatientVitals(void* shmem_ptr);
+void monitorPatientVitals(void* shmem_ptr, int int_coid);
