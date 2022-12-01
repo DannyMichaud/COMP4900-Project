@@ -163,6 +163,8 @@ void getVitalOnInterval(patient_vital_thrinfo_t* vitalInfo){
 
 // Update vitals based on patient health
 void updateVitalOnInterval(patient_vital_thrinfo_t* vitalInfo) {
+	//read from monitor's stuff (IV fluid level, etc. ???)
+	//update patient vitals randomly + based on monitor stuff
 	while(1) {
 		switch(patientHealth) {
 		case HEALTHY:
