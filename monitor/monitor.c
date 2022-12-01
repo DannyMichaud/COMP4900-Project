@@ -62,22 +62,39 @@ void connectToHospitalSystem(){
 	//temporary until proper client loop set up
 	while(1){
 
-		internal_monitor_msg_t msg;
-		internal_monitor_msg_t rmsg = { 0 };
+		internal_monitor_msg_t int_msg;
+		internal_monitor_msg_t int_rmsg = { 0 };
 
 		//todo<internal channel>: wait to receive message from monitoring thread (patient <-> monitor)
-		int rcvid = MsgReceive(internalChannel->chid, &msg, sizeof(msg), NULL);
+		int rcvid = MsgReceive(internalChannel->chid, &int_msg, sizeof(int_msg), NULL);
 
 		if(rcvid > 0){
-			printf("Received critical status code %d\n", msg.status);
+			printf("Received critical status code %d\n", int_msg.status);
 		}
 
 		//send empty reply to monitoring thread to unblock it
-		int status = MsgReply(rcvid, EOK, &rmsg, sizeof(rmsg));
+		int status = MsgReply(rcvid, EOK, &int_rmsg, sizeof(int_rmsg));
+
+		if(status == -1){
+			printf("Internal channel broke :( \n");
+			return;
+		}
 
 		//send message to hospital system informing it of patient's status
+		hospital_system_msg_to_t msg = {SOURCE_MONITOR, HS_MSG_PATIENT_CRITICAL, monitorId, int_msg.status};
+		hospital_system_msg_from_t msgReply;
+
+		status = MsgSend(coid, &msg, sizeof(hospital_system_msg_to_t), &msgReply, sizeof(hospital_system_msg_from_t));
+
+		if(status == -1){
+			printf("Hospital system broke/has been shut off :(\n");
+			return;
+		}
 
 		//wait for reply
+		if(msgReply.messageReplyType == HS_REPLY_HELP){
+			printf("Hospital system is helping, message '%s'\n", msgReply.data.string_data);
+		}
 
 		//handling of reply (if needed)
 
@@ -183,7 +200,7 @@ void monitorPatientVitals(void* shmem_ptr, int int_coid) {
 		// Check patient heart rate
 		if (patientVitals.heartRate < PATIENT_HEARTBEAT_LOWER_LIMIT || patientVitals.heartRate > PATIENT_HEARTBEAT_UPPER_LIMIT) {
 			// Send message to hospital system (critical)
-			status |= 1;
+			status |= 1 << 0;
 			//printf("(TEMP) Heartrate critical: %d\n", patientVitals.heartRate);
 		}
 
@@ -226,6 +243,8 @@ void monitorPatientVitals(void* shmem_ptr, int int_coid) {
 		for(int i = IV_FLUID; i <= MEDICINE; i++){
 			updateTreatment(shmem_ptr, i, &patientVitals);
 		}
+
+		printf("Status: %d\n", status);
 
 		//if any patient vitals critical, send message over internal channel
 		if(status != 0){

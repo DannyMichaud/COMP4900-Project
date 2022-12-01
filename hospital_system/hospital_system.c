@@ -29,6 +29,7 @@ int main(int argc, char **argv) {
 	mainLoop(&systemChannel);
 
 	free(systemChannel);
+
 	return 0;
 }
 
@@ -146,6 +147,20 @@ void handleMonitorMessage(hospital_system_msg_to_t* msg, hospital_system_msg_fro
 		rmsg->data2.shmem_handle = monitor_handle;
 
 		break;
+	case HS_MSG_PATIENT_CRITICAL:
+
+
+		printf("Received notification of patient in critical condition from monitor %d, status code %d\n",msg->id, msg->statusCode);
+
+		//todo: add actual handling here?
+
+
+		//notify the monitor that help is on the way
+		rmsg->messageReplyType = HS_REPLY_HELP;
+		strcpy(rmsg->data.string_data,"Help is on the way");
+
+		break;
+
 	default:
 		break;
 	}
