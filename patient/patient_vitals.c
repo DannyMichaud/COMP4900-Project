@@ -38,7 +38,7 @@ vital_val_t getVital(vitalType_t vitalType){
 
 	vital_val_t returnVal;
 
-	switch(vitalType){
+	switch(vitalType) {
 	case HEARTBEAT:
 		returnVal.int_val = patientVitals.heartRate;
 		break;

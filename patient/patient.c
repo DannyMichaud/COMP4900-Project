@@ -20,8 +20,6 @@
 #include "../hospital_system/hospital_system_address.h"
 #include "../hospital_system/hospital_system_messages.h"
 
-
-
 typedef union
 {
 	uint16_t type;
@@ -29,7 +27,11 @@ typedef union
 	get_shmem_msg_t get_shmem;
 } recv_buf_t;
 
+patientHealth_t patientHealth;
+
 int main(int argc, char **argv) {
+	// TEMP: set patient health based on args
+	patientHealth = argc > 1 ? HEALTHY : argv[1];
 
 	//todo: request hospital server for server name
 
@@ -61,6 +63,10 @@ void startPatientServer(char* patientServerName){
 	// register our name for a channel
 
 	name_attach_t* patientChannel = name_attach(NULL, patientServerName, 0);
+	recv_buf_t msg;
+	struct _msg_info info;
+	int rcvid = MsgReceive(patientChannel->chid, &msg, sizeof(msg), &info);
+	pid_t pid = info.pid;
 
 	while(1){
 		recv_buf_t msg;
@@ -73,13 +79,13 @@ void startPatientServer(char* patientServerName){
 
 		pid_t pid = info.pid;
 
+	while(1){
 		if (rcvid == 0) {
 			//received a pulse
 
 		} else {
 			handleMessageFromMonitor(msg, pid, rcvid);
 		}
-
 	}
 
 	name_detach(patientChannel, 0);
@@ -111,6 +117,8 @@ void handleMessageFromMonitor(recv_buf_t msg, pid_t pid, int rcvid){
 }
 
 void initVitalThreads(pthread_t* threads, void* ptr){
+	// Initialize vitals with default values for now
+	initVitals(NULL);
 
 	patient_vital_thrinfo_t* heartbeatThread = malloc(sizeof(patient_vital_thrinfo_t));
 	*heartbeatThread = (patient_vital_thrinfo_t){HEARTBEAT, PATIENT_SHMEM_OFFSET_HEARTBEAT, 10, ptr};
@@ -153,9 +161,20 @@ void getVitalOnInterval(patient_vital_thrinfo_t* vitalInfo){
 	}
 }
 
+// Update vitals based on patient health
 void updateVitalOnInterval(patient_vital_thrinfo_t* vitalInfo) {
 	while(1) {
-
+		switch(patientHealth) {
+		case HEALTHY:
+			// logic to change patient status based on type of vital
+			break;
+		case UNHEALTHY:
+			// logic to change patient status based on type of vital
+			break;
+		default:
+			break;
+		}
+		sleep(1);
 	}
 }
 

@@ -11,6 +11,11 @@ typedef enum {
 	OXYGEN_SATURATION = 5,
 } vitalType_t;
 
+typedef enum {
+	HEALTHY = 0,
+	UNHEALTHY = 1
+} patientHealth_t;
+
 //provides info to updating thread
 typedef struct patient_vital_thrinfo {
 	vitalType_t vitalType;
