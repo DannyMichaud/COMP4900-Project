@@ -40,6 +40,10 @@ void connectToHospitalSystem(){
 
 	printf("Id: %d\n", msgReply.data.int_data);
 
+	//todo<internal channel>: create internal channel to communicate between monitor <-> hospital system, and patient <-> monitor threads
+	//recommended: use server name 'monitor-int-<id>' (Ex: monitor-int-1)
+	// (using channelcreate would require mechanism to store chid or global variable (both kinda suck)
+
 	//create thread to monitor shared memory
 	pthread_t thread;
 
@@ -47,6 +51,17 @@ void connectToHospitalSystem(){
 
 	//temporary until proper client loop set up
 	while(1){
+
+		//todo<internal channel>: wait to receive message from monitoring thread (patient <-> monitor)
+
+		//send empty reply to monitoring thread to unblock it
+
+		//send message to hospital system informing it of patient's status
+
+		//wait for reply
+
+		//handling of reply (if needed)
+
 		sleep(1);
 	}
 }
@@ -92,6 +107,10 @@ void connectToPatient(char* patientServerName){
 		coid = name_open(patientServerName, 0);
 		sleep(1);
 	}
+
+	//todo<internal channel>: open the internal channel aswell (pass it into monitorPatientVitals function)
+	//variable name: int_coid??
+
 	/* request for shared memory */
 	get_shmem_msg_t get_msg;
 	get_shmem_resp_t get_msg_reply;
@@ -124,6 +143,7 @@ void connectToPatient(char* patientServerName){
 	munmap(patient_shmem_ptr, 4096);
 }
 
+//todo<internal channel>: include internal channel connection id (int_coid?) as parameter
 void monitorPatientVitals(void* shmem_ptr) {
 
 	// Get vitals
@@ -177,6 +197,8 @@ void monitorPatientVitals(void* shmem_ptr) {
 		for(int i = IV_FLUID; i <= MEDICINE; i++){
 			updateTreatment(shmem_ptr, i, &patientVitals);
 		}
+
+		//todo<internal channel>: if any patient vitals critical, send message over internal channel
 
 		sleep(1);
 	}
