@@ -79,9 +79,7 @@ void startPatientServer(char* patientServerName){
 		printf("Received message from monitor\n");
 
 		pid_t pid = info.pid;
-	}
 
-	while(1){
 		if (rcvid == 0) {
 			//received a pulse
 
