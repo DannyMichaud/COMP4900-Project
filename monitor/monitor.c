@@ -44,7 +44,7 @@ void connectToHospitalSystem(){
 
 	monitorId = msgReply.data.int_data;
 
-	printf("Id: %d\n", msgReply.data.int_data);
+	printf("Connected to hospital system and got id: %d\n", msgReply.data.int_data);
 
 	//todo<internal channel>: create internal channel to communicate between monitor <-> hospital system, and patient <-> monitor threads
 	//recommended: use server name 'monitor-int-<id>' (Ex: monitor-int-1)
@@ -52,7 +52,7 @@ void connectToHospitalSystem(){
 
 	name_attach_t* internalChannel = name_attach(NULL, "monitor-int-" + monitorId, 0);
 
-	printf("%s\n", "monitor-int-" + monitorId);
+	printf("Set up internal channel at: %s\n", "monitor-int-" + monitorId);
 
 	//create thread to monitor shared memory
 	pthread_t thread;
@@ -113,10 +113,12 @@ void monitorHospitalSystemSharedMemory(shm_handle_t shmem_handle){
 	/* once mapped, we don't need the fd anymore */
 	close(fd);
 
+	printf("Started monitoring shared memory with hospital system\n");
+
 	while(1){
 		char* message = read_shmem(monitor_shmem_ptr, HS_SHMEM_OFFSET_PATIENT_NAME);
 
-		printf("Read patient name from server: %s\n", message);
+		printf("(SHARED MEMORY MONITORING) Read patient name from server: %s\n", message);
 
 		//if server name is ready, connect on new thread and end this one
 		if(strcmp(message, "No patient") != 0){

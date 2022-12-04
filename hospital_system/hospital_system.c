@@ -24,7 +24,11 @@ int main(int argc, char **argv) {
 
 	name_attach_t* systemChannel = malloc(sizeof(name_attach_t));
 
+	printf("Hospital system starting...\n");
+
 	startServer(&systemChannel);
+
+	printf("Entering main loop...\n");
 
 	mainLoop(&systemChannel);
 
@@ -54,23 +58,28 @@ void mainLoop(name_attach_t** channel){
 
 		hospital_system_msg_from_t rmsg;
 
-		printf("Received msg, rcvid %d\n", rcvid);
+		printf("Received message, rcvid %d\n", rcvid);
 
-		if(rcvid == -1){
+		if(rcvid == -1 || rcvid == 0){
+			printf("Disconnect/error message received\n");
 			continue;
 		}
 
 		//handle message depending on whether it came from patient or monitor
 		switch(msg.messageSender){
 		case SOURCE_PATIENT:
+			printf("Handling message received from patient\n");
 			handlePatientMessage(&msg, &rmsg, &monitorList);
 			break;
 		case SOURCE_MONITOR:
+			printf("Handling message received from monitor\n");
 			handleMonitorMessage(&msg, &rmsg, &monitorList, info.pid);
 			break;
 		default:
 			break;
 		}
+
+		printf("Message handled, replying\n");
 
 		//send message back to client
 		int result = MsgReply(rcvid, EOK, &rmsg, sizeof(rmsg));
@@ -86,6 +95,7 @@ int handlePatientMessage(hospital_system_msg_to_t* msg, hospital_system_msg_from
 	//upon patient connection, find it a freed up monitor and
 	switch(msg->messageType){
 	case HS_MSG_CONNECT:
+		printf("Handling connection request from patient\n");
 
 		for(int i = 0; i < monitorList->length; i++){
 
@@ -127,6 +137,7 @@ void handleMonitorMessage(hospital_system_msg_to_t* msg, hospital_system_msg_fro
 
 	switch(msg->messageType){
 	case HS_MSG_CONNECT:
+		printf("Handling connection request from monitor\n");
 
 		//create shared memory to be used in hospital system -> monitor un-prompted communication
 		create_shared_memory(HS_MONITOR_SHMEM_SIZE, monitor_pid, &shmem_ptr, &monitor_handle);
