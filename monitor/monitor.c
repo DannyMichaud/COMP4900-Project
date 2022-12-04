@@ -138,15 +138,21 @@ void connectToPatient(char* patientServerName){
 
 	/* find our server to get a coid*/
 	int coid = -1;
+
+	printf("Trying to connect to patient at %s\n", patientServerName);
 	//may have to try a few times while things get set up
 	while(coid == -1){
 		coid = name_open(patientServerName, 0);
 		sleep(1);
 	}
 
+	printf("Successfully connected to paitnet at %s, coid %d\n", patientServerName, coid);
+
 	//todo<internal channel>: open the internal channel aswell (pass it into monitorPatientVitals function)
 	//variable name: int_coid??
 	int int_coid = name_open("monitor-int-" + monitorId, 0);
+
+	printf("Internal channel successfully linked, int_coid %d\n", int_coid);
 
 	/* request for shared memory */
 	get_shmem_msg_t get_msg;
@@ -154,6 +160,8 @@ void connectToPatient(char* patientServerName){
 
 	get_msg.type = GET_SHMEM_MSG_TYPE;
 	get_msg.shared_mem_bytes = PATIENT_SHMEM_SIZE;
+
+	printf("Sending connection request to patient\n");
 
 	//send the message to the server and get a reply
 	int status = MsgSend(coid, &get_msg, sizeof(get_shmem_msg_t), &get_msg_reply, sizeof(get_shmem_resp_t));
