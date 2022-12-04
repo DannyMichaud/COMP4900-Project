@@ -11,6 +11,11 @@ typedef enum {
 	OXYGEN_SATURATION = 5,
 } vitalType_t;
 
+typedef struct illness {
+	vitalType_t vitalType;
+	uint8_t severity;
+} illness_t;
+
 typedef enum {
 	HEALTHY = 0,
 	UNHEALTHY = 1
@@ -36,5 +41,5 @@ void startPatientServer(char* patientServerName);
 void getVitalOnInterval(patient_vital_thrinfo_t* vitalInfo);
 
 // updates vitals on an interval
-void updateVitalOnInterval(patient_vital_thrinfo_t* vitalInfo);
+void updateVitalOnInterval();
 

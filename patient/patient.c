@@ -29,10 +29,19 @@ typedef union
 } recv_buf_t;
 
 patientHealth_t patientHealth;
+illness_t illness;
 
+// argv[1] = vital type
+// argv[2] = severity
 int main(int argc, char **argv) {
-	// TEMP: set patient health based on args
-	//patientHealth = (argc > 1) ? HEALTHY : argv[1];
+	// set patient illness based on args
+	if (argc > 2) {
+		illness.vitalType = atoi(argv[1]);
+		illness.severity = atoi(argv[2]);
+	} else {
+		// didn't init patient properly
+		exit(-1);
+	}
 	patientHealth = HEALTHY;
 	//todo: request hospital server for server name
 
@@ -66,8 +75,6 @@ void startPatientServer(char* patientServerName){
 	name_attach_t* patientChannel = name_attach(NULL, patientServerName, 0);
 	recv_buf_t msg;
 	struct _msg_info info;
-	int rcvid = MsgReceive(patientChannel->chid, &msg, sizeof(msg), &info);
-	pid_t pid = info.pid;
 
 	while(1){
 		recv_buf_t msg;
@@ -82,11 +89,20 @@ void startPatientServer(char* patientServerName){
 
 		if (rcvid == 0) {
 			//received a pulse
-
 		} else {
 			handleMessageFromMonitor(msg, pid, rcvid);
 		}
 	}
+
+//	while(1){
+//		if (rcvid == 0) {
+//			//received a pulse
+//			printf("received a pulse\n");
+//		} else {
+//			printf("received some message\n");
+//			handleMessageFromMonitor(msg, pid, rcvid);
+//		}
+//	}
 
 	name_detach(patientChannel, 0);
 	free(patientChannel);
@@ -94,11 +110,14 @@ void startPatientServer(char* patientServerName){
 
 
 void handleMessageFromMonitor(recv_buf_t msg, pid_t pid, int rcvid){
+	printf("message type: %d\n", msg.type);
 	switch(msg.type){
 	case GET_SHMEM_MSG_TYPE: ;
 
 		get_shmem_resp_t rmsg;
 		void* ptr;
+
+		printf("inside handleMessageFromMonitor case\n");
 
 		create_shared_memory(msg.get_shmem.shared_mem_bytes, pid, &ptr, &rmsg.mem_handle);
 
@@ -106,7 +125,7 @@ void handleMessageFromMonitor(recv_buf_t msg, pid_t pid, int rcvid){
 		int result = MsgReply(rcvid, EOK, &rmsg, sizeof(get_shmem_resp_t));
 
 		//todo - set up threads to update shared memory
-		pthread_t threads[5];
+		pthread_t threads[7];
 
 		initVitalThreads(threads, ptr);
 
@@ -120,6 +139,7 @@ void initVitalThreads(pthread_t* threads, void* ptr){
 	// Initialize vitals with default values for now
 	initVitals(NULL);
 
+	// Allocate memory for vital threads
 	patient_vital_thrinfo_t* heartbeatThread = malloc(sizeof(patient_vital_thrinfo_t));
 	*heartbeatThread = (patient_vital_thrinfo_t){HEARTBEAT, PATIENT_SHMEM_OFFSET_HEARTBEAT, 10, ptr};
 	patient_vital_thrinfo_t* systolicBPThread = malloc(sizeof(patient_vital_thrinfo_t));
@@ -133,13 +153,19 @@ void initVitalThreads(pthread_t* threads, void* ptr){
 	patient_vital_thrinfo_t* oxygenSaturationThread = malloc(sizeof(patient_vital_thrinfo_t));
 	*oxygenSaturationThread = (patient_vital_thrinfo_t){OXYGEN_SATURATION, PATIENT_SHMEM_OFFSET_OXYGEN_SATURATION, 10, ptr};
 
-	//create thread for each vital
+	printf("Creating threads\n");
+
+	//create thread for each vital (to write to shared memory)
 	pthread_create(&threads[0], NULL,(void*) &getVitalOnInterval, heartbeatThread);
 	pthread_create(&threads[1], NULL,(void*) &getVitalOnInterval, systolicBPThread);
 	pthread_create(&threads[2], NULL,(void*) &getVitalOnInterval, diastolicBPThread);
 	pthread_create(&threads[3], NULL,(void*) &getVitalOnInterval, temperatureThread);
 	pthread_create(&threads[4], NULL,(void*) &getVitalOnInterval, respirationThread);
 	pthread_create(&threads[5], NULL,(void*) &getVitalOnInterval, oxygenSaturationThread);
+
+	printf("Creating update threads\n");
+	//HARD-CODED FOR NOW, PASS IN SOMEWHERE
+	pthread_create(&threads[6], NULL, (void*) &updateVitalOnInterval, NULL);
 }
 
 
@@ -150,33 +176,25 @@ void getVitalOnInterval(patient_vital_thrinfo_t* vitalInfo){
 
 		if(vitalInfo->vitalType == TEMPERATURE){
 			write_shmem_float(vitalInfo->shmem_ptr, vitalValue.float_val, vitalInfo->offset, vitalInfo->range);
-			printf("Temperature: %s\n", (char *) vitalInfo->shmem_ptr + vitalInfo->offset);
+			printf("(PATIENT) Temperature: %s\n", (char *) vitalInfo->shmem_ptr + vitalInfo->offset);
 		}
 		else {
 			write_shmem_int(vitalInfo->shmem_ptr, vitalValue.int_val, vitalInfo->offset, vitalInfo->range);
-			printf("Vital: %s\n", (char *) vitalInfo->shmem_ptr + vitalInfo->offset);
+			printf("(PATIENT) Vital: %s\n", (char *) vitalInfo->shmem_ptr + vitalInfo->offset);
 		}
 
-		sleep(1);
+		sleep(3);
 	}
 }
 
-// Update vitals based on patient health
-void updateVitalOnInterval(patient_vital_thrinfo_t* vitalInfo) {
-	//read from monitor's stuff (IV fluid level, etc. ???)
-	//update patient vitals randomly + based on monitor stuff
-	while(1) {
-		switch(patientHealth) {
-		case HEALTHY:
-			// logic to change patient status based on type of vital
-			break;
-		case UNHEALTHY:
-			// logic to change patient status based on type of vital
-			break;
-		default:
-			break;
-		}
-		sleep(1);
+// Update vitals randomly based on patient illness
+void updateVitalOnInterval() {
+	// Update vital on condition of them being healthy
+	// May need changes here
+	while(isPatientHealthy(illness.vitalType)) {
+		updateVital(illness.vitalType, generateVitalValue(illness));
+
+		sleep(2);
 	}
 
 	return;

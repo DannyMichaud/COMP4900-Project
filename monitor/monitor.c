@@ -124,6 +124,8 @@ void monitorHospitalSystemSharedMemory(shm_handle_t shmem_handle){
 		if(strcmp(message, "No patient") != 0){
 			pthread_t thread;
 
+			printf("creating connectopatient thread\n");
+
 			pthread_create(&thread, NULL,(void*) &connectToPatient, message);
 			free(message);
 			break;
@@ -148,7 +150,7 @@ void connectToPatient(char* patientServerName){
 		sleep(1);
 	}
 
-	printf("Successfully connected to paitnet at %s, coid %d\n", patientServerName, coid);
+	printf("Successfully connected to patient at %s, coid %d\n", patientServerName, coid);
 
 	//todo<internal channel>: open the internal channel aswell (pass it into monitorPatientVitals function)
 	//variable name: int_coid??
@@ -249,10 +251,12 @@ void monitorPatientVitals(void* shmem_ptr, int int_coid) {
 			//printf("(TEMP) Respiration critical: %d\n", patientVitals.respiration);
 		}
 
+		/*
 		//update treatments accordingly
 		for(int i = IV_FLUID; i <= MEDICINE; i++){
 			updateTreatment(shmem_ptr, i, &patientVitals);
 		}
+		*/
 
 		printf("Status: %d\n", status);
 
