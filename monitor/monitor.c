@@ -50,9 +50,17 @@ void connectToHospitalSystem(){
 	//recommended: use server name 'monitor-int-<id>' (Ex: monitor-int-1)
 	// (using channelcreate would require mechanism to store chid or global variable (both kinda suck)
 
-	name_attach_t* internalChannel = name_attach(NULL, "monitor-int-" + monitorId, 0);
+	int intChannelNameLength = snprintf(NULL, 0, "monitor-int-%d", monitorId);
 
-	printf("Set up internal channel at: %s\n", "monitor-int-" + monitorId);
+	char* internalChannelName = malloc(sizeof(intChannelNameLength+1));
+
+	snprintf(internalChannelName, intChannelNameLength+1, "monitor-int-%d", monitorId);
+
+	name_attach_t* internalChannel = name_attach(NULL, internalChannelName, 0);
+
+	printf("Set up internal channel at: %s\n", internalChannelName);
+
+	free(internalChannelName);
 
 	//create thread to monitor shared memory
 	pthread_t thread;
@@ -154,7 +162,16 @@ void connectToPatient(char* patientServerName){
 
 	//todo<internal channel>: open the internal channel aswell (pass it into monitorPatientVitals function)
 	//variable name: int_coid??
-	int int_coid = name_open("monitor-int-" + monitorId, 0);
+
+	int intChannelNameLength = snprintf(NULL, 0, "monitor-int-%d", monitorId);
+
+	char* internalChannelName = malloc(sizeof(intChannelNameLength+1));
+
+	snprintf(internalChannelName, intChannelNameLength+1, "monitor-int-%d", monitorId);
+
+	int int_coid = name_open(internalChannelName, 0);
+
+	free(internalChannelName);
 
 	printf("Internal channel successfully linked, int_coid %d\n", int_coid);
 
