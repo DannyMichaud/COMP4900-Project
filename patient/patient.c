@@ -94,16 +94,6 @@ void startPatientServer(char* patientServerName){
 		}
 	}
 
-//	while(1){
-//		if (rcvid == 0) {
-//			//received a pulse
-//			printf("received a pulse\n");
-//		} else {
-//			printf("received some message\n");
-//			handleMessageFromMonitor(msg, pid, rcvid);
-//		}
-//	}
-
 	name_detach(patientChannel, 0);
 	free(patientChannel);
 }
