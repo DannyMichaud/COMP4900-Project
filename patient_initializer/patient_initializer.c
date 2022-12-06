@@ -54,7 +54,7 @@ int main(int argc, char **argv)
 
             snprintf(vitalType,length+1, "%d", j);
 
-            char *args[] = {"patient", vitalType, argv[j]};\
+            char *args[] = {"patient", vitalType, argv[j]};
             inherit.flags = 0;
             if ((spawn("patient", 0, NULL, &inherit, args, environ)) == -1)
             {
@@ -63,24 +63,9 @@ int main(int argc, char **argv)
             	printf( "The error generated was %d\n", errvalue );
             	printf( "That means: %s\n", strerror( errvalue ) );
             }
-            // illness.vitalType = j;
-            // illness.severity = atoi(argv[j]);
-            // if (pthread_create(NULL, NULL, generatePatient, &illness) < 0)
-            // {
-            //     printf("ERROR creating thread\n");
-            //     return -1;
-            // }
         }
     }
 
     // patient takes vital type <enum 0-6> & severity <-3 to 3>
     return 0;
 }
-
-// void *generatePatient(void *i)
-// {
-//     illness_t illness = *(illness_t *)i;
-//     printf("I am a test. I have these params: %d %d\n", illness.vitalType, illness.severity);
-//     initializePatient(illness.vitalType, illness.severity);
-//     return NULL;
-// }
