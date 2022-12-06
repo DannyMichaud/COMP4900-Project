@@ -50,6 +50,7 @@ int main(int argc, char **argv)
             sprintf(vitalType, "%d", j);
             char *args[] = {"test", vitalType, argv[j], NULL};
             char *tArgs[] = {"test", NULL};
+            inherit.flags = 0;
             if ((spawn("test", 0, NULL, &inherit, tArgs, environ)) == -1)
             {
                 printf("ERROR: Unable to create patient %d vital %d.\n", i + 1, j);
