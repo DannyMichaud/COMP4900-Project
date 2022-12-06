@@ -61,6 +61,11 @@ void getServerNameFromHospitalSystem(){
 
 	int status = MsgSend(coid, &msg, sizeof(hospital_system_msg_to_t), &msgReply, sizeof(hospital_system_msg_from_t));
 
+	if(status == -1){
+		printf("Error: No hospital system\n");
+		exit(1);
+	}
+
 	//close connection to hospital system as it is no longer necessary
 	name_close(coid);
 
