@@ -46,12 +46,17 @@ int main(int argc, char **argv)
 		printf("Generating patient %d\n", i + 1);
         for (short j = 1; j < argc; j++)
         {
-            char vitalType[6];
-            sprintf(vitalType, "%d", j);
-            char *args[] = {"test", vitalType, argv[j], NULL};
-            char *tArgs[] = {"test", NULL};
+            char* vitalType;
+
+            int length = snprintf(NULL, 0, "%d", j);
+
+            vitalType = malloc(length + 1);
+
+            snprintf(vitalType,length+1, "%d", j);
+
+            char *args[] = {"patient", vitalType, argv[j]};\
             inherit.flags = 0;
-            if ((spawn("test", 0, NULL, &inherit, tArgs, environ)) == -1)
+            if ((spawn("patient", 0, NULL, &inherit, args, environ)) == -1)
             {
                 printf("ERROR: Unable to create patient %d vital %d.\n", i + 1, j);
             	errvalue = errno; // preserve value as first printf may change errno
