@@ -39,7 +39,7 @@ int main(int argc, char **argv) {
 		illness.vitalType = atoi(argv[1]);
 		illness.severity = atoi(argv[2]);
 	} else {
-		// didn't init patient properly
+		printf("ERROR: Please input valid arguments.\n");
 		exit(-1);
 	}
 	patientHealth = HEALTHY;

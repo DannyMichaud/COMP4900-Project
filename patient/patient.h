@@ -13,7 +13,7 @@ typedef enum {
 
 typedef struct illness {
 	vitalType_t vitalType;
-	uint8_t severity;
+	int severity;
 } illness_t;
 
 typedef enum {
@@ -43,3 +43,5 @@ void getVitalOnInterval(patient_vital_thrinfo_t* vitalInfo);
 // updates vitals on an interval
 void updateVitalOnInterval();
 
+// TODO: explain what this does without repeating the function name
+void getServerNameFromHospitalSystem();
