@@ -88,15 +88,11 @@ void startPatientServer(char* patientServerName){
 
 		int rcvid = MsgReceive(patientChannel->chid, &msg, sizeof(msg), &info);
 
-		printf("Received message from monitor\n");
+		printf("(PATIENT) Received message from monitor with rcvid %d\n", rcvid);
 
 		pid_t pid = info.pid;
 
-		if (rcvid == 0) {
-			//received a pulse
-		} else {
-			handleMessageFromMonitor(msg, pid, rcvid);
-		}
+		handleMessageFromMonitor(msg, pid, rcvid);
 	}
 
 	name_detach(patientChannel, 0);
@@ -105,12 +101,31 @@ void startPatientServer(char* patientServerName){
 
 
 void handleMessageFromMonitor(recv_buf_t msg, pid_t pid, int rcvid){
+
+	void* ptr;
+
+	//handle monitor shutting down
+
+	if(rcvid == -1 || (rcvid == 0 && msg.pulse.code == _PULSE_CODE_DISCONNECT)){
+		printf("(PATIENT) Monitor has shut down, shutting down patient");
+
+		if(ptr != NULL){
+			munmap(ptr, 4096);
+		}
+		exit(0);
+	}
+	else if(rcvid == 0){
+		return;
+	}
+
 	printf("message type: %d\n", msg.type);
+
+
+
 	switch(msg.type){
 	case GET_SHMEM_MSG_TYPE: ;
 
 		get_shmem_resp_t rmsg;
-		void* ptr;
 
 		printf("inside handleMessageFromMonitor case\n");
 

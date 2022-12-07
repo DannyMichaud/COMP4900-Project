@@ -150,7 +150,7 @@ void monitorHospitalSystemSharedMemory(shm_handle_t shmem_handle){
 		char* status = read_shmem(monitor_shmem_ptr, HS_SHMEM_OFFSET_STATUS);
 
 		if(strcmp(status, "Running") != 0){
-			printf("Hospital system has shut down, closing monitor");
+			printf("Hospital system has shut down, closing monitor\n");
 
 			free(status);
 			exit(0);
