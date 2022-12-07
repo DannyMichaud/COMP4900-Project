@@ -75,6 +75,10 @@ void mainLoop(name_attach_t** channel){
 			printf("Handling message received from monitor\n");
 			handleMonitorMessage(&msg, &rmsg, &monitorList, info.pid);
 			break;
+		case SOURCE_SHUTDOWN:
+			printf("Handling shutdown\n");
+			handleShutdown(channel,&monitorList);
+			break;
 		default:
 			break;
 		}
@@ -145,6 +149,9 @@ void handleMonitorMessage(hospital_system_msg_to_t* msg, hospital_system_msg_fro
 		//write default value to patient name section
 		write_shmem(shmem_ptr, "No patient\0", HS_SHMEM_OFFSET_PATIENT_NAME, 20);
 
+		//write default status to monitor section
+		write_shmem(shmem_ptr, "Running\0", HS_SHMEM_OFFSET_STATUS, 10);
+
 		//NOTE: ANY new shared memory values we want to add MUST be initialized here!!!! Or the monitor will segfault!!1!111!
 
 		//track new monitor with id equal to previous length of array
@@ -175,6 +182,39 @@ void handleMonitorMessage(hospital_system_msg_to_t* msg, hospital_system_msg_fro
 	default:
 		break;
 	}
+}
+
+void handleShutdown(name_attach_t** channel, monitor_array_t* monitorList){
+
+	printf("Shutting down hospital system\n");
+
+	for(int i = 0; i < monitorList->length; i++){
+		void* monitor_shmem_ptr = monitorList->monitors[i].shmem_ptr;
+
+		printf("Shutting down monitor %d\n", monitorList->monitors[i].id);
+
+		write_shmem(monitor_shmem_ptr, "Shutdown\0", HS_SHMEM_OFFSET_STATUS, 10);
+	}
+
+	printf("Waiting to ensure monitors shut down...");
+
+	sleep(5);
+
+	//clear shared memory allocations
+	for(int i = 0; i < monitorList->length; i++){
+		void* monitor_shmem_ptr = monitorList->monitors[i].shmem_ptr;
+
+		munmap(monitor_shmem_ptr, 4096);
+	}
+
+
+	//clear allocated memory and free channel
+	name_detach(*channel, 0);
+	free(monitorList->monitors);
+
+	printf("Shutdown complete!");
+
+	exit(0);
 }
 
 char* generatePatientServerName(){

@@ -11,5 +11,6 @@ int handlePatientMessage(hospital_system_msg_to_t*, hospital_system_msg_from_t*,
 
 void handleMonitorMessage(hospital_system_msg_to_t*, hospital_system_msg_from_t*, monitor_array_t*, pid_t);
 
+void handleShutdown(name_attach_t**, monitor_array_t*);
 //for generating the server name used by the patient
 char* generatePatientServerName();

@@ -10,3 +10,10 @@ COMP 4900 project
 4. Run the hospital system program within the VM under one terminal
 5. Run the monitor within the VM under the other terminal
 6. Run the patient program using the momentics IDE, outside of the VM
+
+## How to shutdown the project
+
+1. Copy "shutdown" binary into VM
+2. Run ./shutdown in VM
+3. Wait a bit
+4. Done!
