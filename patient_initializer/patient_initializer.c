@@ -8,48 +8,46 @@
 
 // arguments:
 // <num patients>
-// <heart vital rate sev>
-// <sys bp sev>
-// <sys ds sev>
-// <temp sev>
-// < resp sev>
-// < o2 sev>
+// optional <patient vitalType arg>
+// optional <patient sev arg>
+// ...
+// optional <patient vitalType arg>
+// optional <patient sev arg>
+
+// any patients not passed any args
+// will be given a default vitalType & severity of 1
+
 int main(int argc, char **argv)
 {
+    short numPatients;
     int status;
     pid_t pid;
     struct inheritance inherit;
-    if (argc < 8)
+    if (argc < 2)
     {
-        printf("ERROR: Please pass in the amount of patients, then the severity for each of their tracked vitals\n");
+        printf("ERROR: Please pass in the amount of patients to initialize\n");
         return -1;
     }
 
-    short patients = atoi(argv[1]);
-    if (patients < 0)
+    numPatients = atoi(argv[1]);
+    if (numPatients < 0)
     {
         printf("ERROR: Please pass in non-negative amount of patients\n");
         return -1;
     }
-
     inherit.flags = 0;
-    for (short i = 0; i < patients; i++)
+    char *vitalType, *severity;
+    int j = 2;
+    for (short i = 0; i < numPatients; i++)
     {
-        printf("PATIENT INITIALIZER: Generating patient %d\n", i + 1);
-        for (short j = 1; j < argc; j++)
+        vitalType = j < argc ? argv[j++] : "1";
+        severity = j < argc ? argv[j++] : "1";
+        printf("PATIENT INITIALIZER: Generating patient %d vitalType %s severity %s\n", i + 1, vitalType, severity);
+
+        char *args[] = {"patient", vitalType, severity, NULL};
+        if ((spawn("patient", 0, NULL, &inherit, args, environ)) == -1)
         {
-            char *vitalType;
-
-            int length = snprintf(NULL, 0, "%d", j);
-            vitalType = malloc(length + 1);
-
-            snprintf(vitalType, length + 1, "%d", j);
-
-            char *args[] = {"patient", vitalType, argv[j]};
-            if ((spawn("patient", 0, NULL, &inherit, args, environ)) == -1)
-            {
-                printf("ERROR: Unable to create patient %d vital %d.\n", i + 1, j);
-            }
+            printf("ERROR: Unable to create patient %d\n", i + 1, j);
         }
     }
 
