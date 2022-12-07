@@ -123,23 +123,40 @@ void monitorHospitalSystemSharedMemory(shm_handle_t shmem_handle){
 
 	printf("Started monitoring shared memory with hospital system\n");
 
+	int waitingForPatient = 1;
+
 	while(1){
-		char* message = read_shmem(monitor_shmem_ptr, HS_SHMEM_OFFSET_PATIENT_NAME);
+		if(waitingForPatient){
+			char* message = read_shmem(monitor_shmem_ptr, HS_SHMEM_OFFSET_PATIENT_NAME);
 
-		printf("(SHARED MEMORY MONITORING) Read patient name from server: %s\n", message);
+			printf("(SHARED MEMORY MONITORING) Read patient name from server: %s\n", message);
 
-		//if server name is ready, connect on new thread and end this one
-		if(strcmp(message, "No patient") != 0){
-			pthread_t thread;
+			//if server name is ready, connect on new thread and end this one
+			if(strcmp(message, "No patient") != 0){
+				pthread_t thread;
 
-			printf("creating connectopatient thread\n");
+				printf("creating connectopatient thread\n");
 
-			pthread_create(&thread, NULL,(void*) &connectToPatient, message);
+				pthread_create(&thread, NULL,(void*) &connectToPatient, message);
+
+				waitingForPatient = 0;
+			}
 			free(message);
-			break;
 		}
 
-		free(message);
+
+
+		//check if hospital system is still running, terminate monitor otherwise
+		char* status = read_shmem(monitor_shmem_ptr, HS_SHMEM_OFFSET_STATUS);
+
+		if(strcmp(status, "Running") != 0){
+			printf("Hospital system has shut down, closing monitor");
+
+			free(status);
+			exit(0);
+		}
+
+		free(status);
 
 		sleep(1);
 	}

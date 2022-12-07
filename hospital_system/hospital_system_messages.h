@@ -5,6 +5,7 @@
 typedef enum {
 	SOURCE_PATIENT = 0,
 	SOURCE_MONITOR = 1,
+	SOURCE_SHUTDOWN = 2, //shutdown tool
 } hs_msgSource_t;
 
 //type of message being sent

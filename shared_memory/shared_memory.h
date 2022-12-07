@@ -35,6 +35,7 @@
 
 //for shared memory between monitor and hospital system
 #define HS_SHMEM_OFFSET_PATIENT_NAME 100
+#define HS_SHMEM_OFFSET_STATUS 200
 
 // ask for a shared_mem_bytes sized object
 typedef struct get_shmem_msg {
