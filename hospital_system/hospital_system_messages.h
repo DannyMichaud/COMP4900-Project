@@ -1,4 +1,3 @@
-
 /* For messages exchanged between patient and hospital system, monitor and hospital system */
 
 //whether the message came from a patient or monitor
@@ -12,6 +11,7 @@ typedef enum {
 typedef enum {
 	HS_MSG_CONNECT = 0, //connection request
 	HS_MSG_PATIENT_CRITICAL = 1, //patient is critical
+	HS_MSG_DOCTOR_PRESENT = 2, //doctor arrived at critical patient
 } hs_msgType_t;
 
 //type of reply being sent
@@ -19,6 +19,7 @@ typedef enum {
 	HS_REPLY_SERVER_NAME = 0, //for sending server id to be used by patient
 	HS_REPLY_SETUP = 1, //for setting up monitor
 	HS_REPLY_HELP = 2, //notification of help
+	HS_REPLY_ACK = 3, //acknowledging message
 } hs_msgReply_t;
 
 //for message sent to hospital server

@@ -204,13 +204,17 @@ void handleMonitorMessage(hospital_system_msg_to_t* msg, hospital_system_msg_fro
 
 		//todo: add actual handling here?
 
-
 		//notify the monitor that help is on the way
 		rmsg->messageReplyType = HS_REPLY_HELP;
 		strcpy(rmsg->data.string_data,"Help is on the way");
 
 		break;
 
+	case HS_MSG_DOCTOR_PRESENT:
+		printf("Doctor has arrived at the critical patient at monitor %d\n", msg->id);
+		rmsg->messageReplyType = HS_REPLY_ACK;
+
+		break;
 	default:
 		break;
 	}

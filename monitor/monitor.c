@@ -24,6 +24,7 @@
 
 //possible todo: deal with this global var lolz
 int monitorId = 0;
+int doctorPresent = 0;
 
 int main(int argc, char **argv) {
 
@@ -101,7 +102,17 @@ void connectToHospitalSystem(){
 
 		//wait for reply
 		if(msgReply.messageReplyType == HS_REPLY_HELP){
-			printf("Hospital system is helping, message '%s'\n", msgReply.data.string_data);
+			printf("Hospital system sent help, message '%s'\n", msgReply.data.string_data);
+
+			// Alert hospital system
+			doctorPresent = 1;
+			msg.messageType = HS_MSG_DOCTOR_PRESENT;
+			status = MsgSend(coid, &msg, sizeof(hospital_system_msg_to_t), &msgReply, sizeof(hospital_system_msg_from_t));
+
+			if (status == -1) {
+				printf("Internal channel broke :( \n");
+				return;
+			}
 		}
 
 		//handling of reply (if needed)
@@ -295,7 +306,7 @@ void monitorPatientVitals(void* shmem_ptr, int int_coid) {
 		printf("Status: %d\n", status);
 
 		//if any patient vitals critical, send message over internal channel
-		if(status != 0){
+		if(status != 0 && !doctorPresent){
 			internal_monitor_msg_t msg = { status };
 			internal_monitor_msg_t msgReply;
 			printf("Critical status to internally send: %d\n", msg.status);
