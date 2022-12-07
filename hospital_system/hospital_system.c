@@ -134,8 +134,8 @@ int handlePatientMessage(hospital_system_msg_to_t* msg, hospital_system_msg_from
 		for(int i = 0; i < monitorList->length; i++){
 
 			if(!monitorList->monitors[i].inUse){
-				//todo: generate random server name
 
+				//generate random server name
 				char* patientServerName = generatePatientServerName();
 
 				printf("Patient server name: %s\n", patientServerName);
@@ -154,6 +154,8 @@ int handlePatientMessage(hospital_system_msg_to_t* msg, hospital_system_msg_from
 			}
 
 		}
+
+		//todo: if no monitor found, send error message to patient which will cause it to shutdown (todo todo: have the patient wait instead and try later?)
 
 		break;
 	default:
