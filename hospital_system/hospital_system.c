@@ -23,6 +23,10 @@
 
 int main(int argc, char **argv) {
 
+	//init randomness beforehand
+	time_t t;
+	srand((unsigned)time(&t));
+
 	name_attach_t* systemChannel = malloc(sizeof(name_attach_t));
 
 	printf("Hospital system starting...\n");
@@ -262,9 +266,6 @@ void handleShutdown(name_attach_t** channel, monitor_array_t* monitorList){
 char* generatePatientServerName(){
 
 	char* serverName = malloc(17);
-
-	time_t t;
-	srand((unsigned)time(&t));
 
 	memcpy(serverName, PATIENT_SERVER_NAME_HEADER, strlen(PATIENT_SERVER_NAME_HEADER));
 

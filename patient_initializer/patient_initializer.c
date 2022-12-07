@@ -40,8 +40,8 @@ int main(int argc, char **argv)
     int j = 2;
     for (short i = 0; i < numPatients; i++)
     {
-        vitalType = j < argc ? argv[j++] : "1";
-        severity = j < argc ? argv[j++] : "1";
+        vitalType = j < argc ? argv[j + 1] : "1";
+        severity = j < argc ? argv[j + 1] : "1";
         printf("PATIENT INITIALIZER: Generating patient %d vitalType %s severity %s\n", i + 1, vitalType, severity);
 
         char *args[] = {"patient", vitalType, severity, NULL};
