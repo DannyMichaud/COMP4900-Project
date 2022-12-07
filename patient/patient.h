@@ -43,5 +43,8 @@ void getVitalOnInterval(patient_vital_thrinfo_t* vitalInfo);
 // updates vitals on an interval
 void updateVitalOnInterval();
 
+//reads monitor status on an interval
+void readMonitorStatus(void* shmem_ptr);
+
 // TODO: explain what this does without repeating the function name
 void getServerNameFromHospitalSystem();

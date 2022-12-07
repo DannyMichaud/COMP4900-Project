@@ -25,6 +25,9 @@
 //possible todo: deal with this global var lolz
 int monitorId = 0;
 
+//this is just lazy but whatever im just trying to shut the patient down properly
+void* patient_shmem_global = NULL;
+
 int main(int argc, char **argv) {
 
 	//start by connecting to hospital system to get registered
@@ -150,8 +153,15 @@ void monitorHospitalSystemSharedMemory(shm_handle_t shmem_handle){
 		char* status = read_shmem(monitor_shmem_ptr, HS_SHMEM_OFFSET_STATUS);
 
 		if(strcmp(status, "Running") != 0){
-			printf("Hospital system has shut down, closing monitor");
+			printf("Hospital system has shut down, closing monitor\n");
 
+
+			//todo: see todo on this when patient_shmem_global is set...
+			if(patient_shmem_global != NULL){
+				write_shmem(patient_shmem_global,"Stopped\0",MONITOR_SHMEM_OFFSET_STATUS, 10);
+				//also want to unmap the shared memory
+				munmap(patient_shmem_global, 4096);
+			}
 			free(status);
 			exit(0);
 		}
@@ -210,10 +220,17 @@ void connectToPatient(char* patientServerName){
     //map the shared memory
 	void *patient_shmem_ptr = mmap(NULL, PATIENT_SHMEM_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
 
+	//possible todo: maybe have channel going from monitor <-> HS thread to patient <-> monitor thread to notify of shutdown so I don't need this?
+	patient_shmem_global = patient_shmem_ptr;
+
 	/* once mapped, we don't need the fd anymore */
 	close(fd);
 
 	printf("Response code for get message: %d\n", status);
+
+	//init status to patient
+	//note: pid might be needed in monitor_treatments.c aswell if we ever want to properly use it
+	write_shmem(patient_shmem_ptr, "Running\0", MONITOR_SHMEM_OFFSET_STATUS, 10);
 
 	//init treatments
 	initTreatments(patient_shmem_ptr);

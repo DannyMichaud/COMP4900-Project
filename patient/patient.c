@@ -120,7 +120,7 @@ void handleMessageFromMonitor(recv_buf_t msg, pid_t pid, int rcvid){
 		int result = MsgReply(rcvid, EOK, &rmsg, sizeof(get_shmem_resp_t));
 
 		//todo - set up threads to update shared memory
-		pthread_t threads[7];
+		pthread_t threads[8];
 
 		initVitalThreads(threads, ptr);
 
@@ -148,7 +148,7 @@ void initVitalThreads(pthread_t* threads, void* ptr){
 	patient_vital_thrinfo_t* oxygenSaturationThread = malloc(sizeof(patient_vital_thrinfo_t));
 	*oxygenSaturationThread = (patient_vital_thrinfo_t){OXYGEN_SATURATION, PATIENT_SHMEM_OFFSET_OXYGEN_SATURATION, 10, ptr};
 
-	printf("Creating threads\n");
+	printf("Creating vital threads\n");
 
 	//create thread for each vital (to write to shared memory)
 	pthread_create(&threads[0], NULL,(void*) &getVitalOnInterval, heartbeatThread);
@@ -161,6 +161,9 @@ void initVitalThreads(pthread_t* threads, void* ptr){
 	printf("Creating update threads\n");
 	//HARD-CODED FOR NOW, PASS IN SOMEWHERE
 	pthread_create(&threads[6], NULL, (void*) &updateVitalOnInterval, NULL);
+
+	printf("Creating status read thread\n");
+	pthread_create(&threads[7], NULL, (void*) &readMonitorStatus, ptr);
 }
 
 
@@ -193,5 +196,26 @@ void updateVitalOnInterval() {
 	}
 
 	return;
+}
+
+void readMonitorStatus(void* shmem_ptr){
+
+	//don't read initially
+	sleep(3);
+
+	while(1){
+		char* status = read_shmem(shmem_ptr, MONITOR_SHMEM_OFFSET_STATUS);
+
+		if(strcmp(status, "Running") != 0){
+			printf("(PATIENT) Monitor has shut down, shutting down patient");
+
+			free(status);
+			munmap(shmem_ptr, 4096);
+			exit(0);
+		}
+		free(status);
+
+		sleep(1);
+	}
 }
 
