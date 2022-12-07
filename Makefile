@@ -21,7 +21,7 @@ SHMEM_DIR = ./shared_memory/
 
 CFLAGS += $(DEBUG) $(TARGET) -Wall
 LDFLAGS+= $(DEBUG) $(TARGET)
-BINS = $(PATIENT_DIR)patient $(MONITOR_DIR)monitor $(HOSPITAL_SYSTEM_DIR)hospital_system $(PATIENT_I_DIR)patient_initializer $(PATIENT_I_DIR)test
+BINS = $(PATIENT_DIR)patient $(MONITOR_DIR)monitor $(HOSPITAL_SYSTEM_DIR)hospital_system $(PATIENT_I_DIR)patient_initializer
 all: $(BINS)
 
 clean:
