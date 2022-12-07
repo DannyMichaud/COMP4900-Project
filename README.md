@@ -2,6 +2,11 @@
 
 COMP 4900 project
 
+## Note for running hospital system
+
+i. No arguments specified - hospital system will automatically spawn 5 monitors
+ii. "noSpawn" specified as first argument - hospital system will not automatically spawn any monitors
+
 ## How to run the project
 
 1. Built the files in the project

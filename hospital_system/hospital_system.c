@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <spawn.h>
 #include <sys/neutrino.h>
 #include <process.h>
 #include <string.h>
@@ -28,6 +29,15 @@ int main(int argc, char **argv) {
 
 	startServer(&systemChannel);
 
+
+	if(!(argc >= 2 && strcmp(argv[1],"noSpawn") == 0)){
+		printf("Spawning monitors...\n");
+		spawnMonitors();
+	}
+	else {
+		printf("Spawning of monitors disabled\n");
+	}
+
 	printf("Entering main loop...\n");
 
 	mainLoop(&systemChannel);
@@ -40,6 +50,26 @@ int main(int argc, char **argv) {
 void startServer(name_attach_t** channel){
 
 	*channel = name_attach(NULL, HOSPITAL_SERVER_NAME, 0);
+
+}
+
+void spawnMonitors(){
+
+	struct inheritance inherit;
+	inherit.flags = 0;
+
+	//needed to hide output of monitors
+	int fd_map[] = {SPAWN_FDCLOSED};
+	//just 5 monitors
+	for(int i = 0; i < 5; i++){
+
+		char *args[] = {"monitor", NULL};
+		if ((spawn("monitor", 1, fd_map, &inherit, args, environ)) == -1)
+		{
+			printf("ERROR: Could not spawn monitor");
+		}
+
+	}
 
 }
 
