@@ -140,6 +140,8 @@ int handlePatientMessage(hospital_system_msg_to_t* msg, hospital_system_msg_from
 
 				printf("Patient server name: %s\n", patientServerName);
 
+				printf("Patient will be connected to monitor %d\n", monitorList->monitors[i].id);
+
 				//set up reply with server name to patient
 				rmsg->messageReplyType = HS_REPLY_SERVER_NAME;
 				strcpy(rmsg->data.string_data, patientServerName);
@@ -155,7 +157,11 @@ int handlePatientMessage(hospital_system_msg_to_t* msg, hospital_system_msg_from
 
 		}
 
-		//todo: if no monitor found, send error message to patient which will cause it to shutdown (todo todo: have the patient wait instead and try later?)
+		//if no monitor found, send error message to patient which will cause it to shutdown
+		rmsg->messageReplyType = HS_REPLY_SERVER_NAME;
+		strcpy(rmsg->data.string_data,"No monitor available");
+
+		printf("No monitor available, informing patient\n");
 
 		break;
 	default:

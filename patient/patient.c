@@ -55,19 +55,46 @@ void getServerNameFromHospitalSystem(){
 	/* find our server to get a coid*/
 	int coid = name_open(HOSPITAL_SERVER_NAME, 0);
 
-	//get our server name from the hospital system
-	hospital_system_msg_to_t msg = {SOURCE_PATIENT, HS_MSG_CONNECT};
+	int numAttempts = 0;
+
 	hospital_system_msg_from_t msgReply;
 
-	int status = MsgSend(coid, &msg, sizeof(hospital_system_msg_to_t), &msgReply, sizeof(hospital_system_msg_from_t));
+	while(1){
+		//get our server name from the hospital system
+		hospital_system_msg_to_t msg = {SOURCE_PATIENT, HS_MSG_CONNECT};
 
-	if(status == -1){
-		printf("Error: No hospital system\n");
-		exit(1);
+
+		int status = MsgSend(coid, &msg, sizeof(hospital_system_msg_to_t), &msgReply, sizeof(hospital_system_msg_from_t));
+
+		if(status == -1){
+			printf("Error: No hospital system\n");
+			exit(1);
+		}
+
+		//if no monitor available, try again in 30s or exit
+		if (strcmp(msgReply.data.string_data, "No monitor available\0") == 0){
+			printf("(PATIENT) Unable to enter hospital due to lack of available monitor\n");
+
+			numAttempts++;
+
+			if(numAttempts < 5){
+				printf("(PATIENT) Trying again in 30s\n");
+				sleep(30);
+			}
+			else {
+				printf("(PATIENT) Failed to enter hospital 5 times in a row, shutting down\n");
+				exit(-1);
+			}
+		}
+		else {
+			break;
+		}
+
 	}
 
 	//close connection to hospital system as it is no longer necessary
 	name_close(coid);
+
 
 	printf("Starting patient with name %s\n", msgReply.data.string_data);
 
