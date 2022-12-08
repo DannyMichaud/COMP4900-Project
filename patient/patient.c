@@ -30,6 +30,7 @@ typedef union
 
 patientHealth_t patientHealth;
 illness_t illness;
+char* name;
 
 // argv[1] = vital type
 // argv[2] = severity
@@ -51,8 +52,7 @@ int main(int argc, char **argv) {
 }
 
 void getServerNameFromHospitalSystem(){
-
-	/* find our server to get a coid*/
+	//find our server to get a coid
 	int coid = name_open(HOSPITAL_SERVER_NAME, 0);
 
 	int numAttempts = 0;
@@ -70,6 +70,9 @@ void getServerNameFromHospitalSystem(){
 			printf("Error: No hospital system\n");
 			exit(1);
 		}
+
+		//Set patient name/id
+		name = msgReply.data.string_data;
 
 		//if no monitor available, try again in 30s or exit
 		if (strcmp(msgReply.data.string_data, "No monitor available\0") == 0){
@@ -128,11 +131,9 @@ void startPatientServer(char* patientServerName){
 
 
 void handleMessageFromMonitor(recv_buf_t msg, pid_t pid, int rcvid){
-
 	void* ptr;
 
 	//handle monitor shutting down
-
 	if(rcvid == -1 || (rcvid == 0 && msg.pulse.code == _PULSE_CODE_DISCONNECT)){
 		printf("(PATIENT) Monitor has shut down, shutting down patient");
 
@@ -146,8 +147,6 @@ void handleMessageFromMonitor(recv_buf_t msg, pid_t pid, int rcvid){
 	}
 
 	printf("message type: %d\n", msg.type);
-
-
 
 	switch(msg.type){
 	case GET_SHMEM_MSG_TYPE: ;
@@ -201,7 +200,6 @@ void initVitalThreads(pthread_t* threads, void* ptr){
 	pthread_create(&threads[5], NULL,(void*) &getVitalOnInterval, oxygenSaturationThread);
 
 	printf("Creating update threads\n");
-	//HARD-CODED FOR NOW, PASS IN SOMEWHERE
 	pthread_create(&threads[6], NULL, (void*) &updateVitalOnInterval, NULL);
 }
 

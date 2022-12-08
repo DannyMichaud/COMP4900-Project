@@ -22,12 +22,10 @@
 #include "../hospital_system/hospital_system_address.h"
 #include "../hospital_system/hospital_system_messages.h"
 
-//possible todo: deal with this global var lolz
 int monitorId = 0;
 int doctorPresent = 0;
 
 int main(int argc, char **argv) {
-
 	//start by connecting to hospital system to get registered
 	connectToHospitalSystem();
 
@@ -35,7 +33,7 @@ int main(int argc, char **argv) {
 }
 
 void connectToHospitalSystem(){
-	/* find our server to get a coid*/
+	// find our server to get a coid
 	int coid = name_open(HOSPITAL_SERVER_NAME, 0);
 
 	hospital_system_msg_to_t msg = {SOURCE_MONITOR, HS_MSG_CONNECT};
@@ -46,10 +44,6 @@ void connectToHospitalSystem(){
 	monitorId = msgReply.data.int_data;
 
 	printf("Connected to hospital system and got id: %d\n", msgReply.data.int_data);
-
-	//todo<internal channel>: create internal channel to communicate between monitor <-> hospital system, and patient <-> monitor threads
-	//recommended: use server name 'monitor-int-<id>' (Ex: monitor-int-1)
-	// (using channelcreate would require mechanism to store chid or global variable (both kinda suck)
 
 	int intChannelNameLength = snprintf(NULL, 0, "monitor-int-%d", monitorId);
 
@@ -74,7 +68,6 @@ void connectToHospitalSystem(){
 		internal_monitor_msg_t int_msg;
 		internal_monitor_msg_t int_rmsg = { 0 };
 
-		//todo<internal channel>: wait to receive message from monitoring thread (patient <-> monitor)
 		int rcvid = MsgReceive(internalChannel->chid, &int_msg, sizeof(int_msg), NULL);
 
 		if(rcvid > 0){
@@ -115,21 +108,18 @@ void connectToHospitalSystem(){
 			}
 		}
 
-		//handling of reply (if needed)
-
 		sleep(1);
 	}
 }
 
 void monitorHospitalSystemSharedMemory(shm_handle_t shmem_handle){
-
     //open handle to get fd
 	int fd = shm_open_handle(shmem_handle, O_RDWR);
 
     //map the shared memory
 	void *monitor_shmem_ptr = mmap(NULL, HS_MONITOR_SHMEM_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
 
-	/* once mapped, we don't need the fd anymore */
+	//once mapped, we don't need the fd anymore
 	close(fd);
 
 	printf("Started monitoring shared memory with hospital system\n");
@@ -155,8 +145,6 @@ void monitorHospitalSystemSharedMemory(shm_handle_t shmem_handle){
 			free(message);
 		}
 
-
-
 		//check if hospital system is still running, terminate monitor otherwise
 		char* status = read_shmem(monitor_shmem_ptr, HS_SHMEM_OFFSET_STATUS);
 
@@ -171,7 +159,6 @@ void monitorHospitalSystemSharedMemory(shm_handle_t shmem_handle){
 
 		sleep(1);
 	}
-
 }
 
 void connectToPatient(char* patientServerName){
@@ -188,9 +175,6 @@ void connectToPatient(char* patientServerName){
 
 	printf("Successfully connected to patient at %s, coid %d\n", patientServerName, coid);
 
-	//todo<internal channel>: open the internal channel aswell (pass it into monitorPatientVitals function)
-	//variable name: int_coid??
-
 	int intChannelNameLength = snprintf(NULL, 0, "monitor-int-%d", monitorId);
 
 	char* internalChannelName = malloc(sizeof(intChannelNameLength+1));
@@ -203,7 +187,7 @@ void connectToPatient(char* patientServerName){
 
 	printf("Internal channel successfully linked, int_coid %d\n", int_coid);
 
-	/* request for shared memory */
+	//request for shared memory
 	get_shmem_msg_t get_msg;
 	get_shmem_resp_t get_msg_reply;
 
@@ -221,7 +205,7 @@ void connectToPatient(char* patientServerName){
     //map the shared memory
 	void *patient_shmem_ptr = mmap(NULL, PATIENT_SHMEM_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
 
-	/* once mapped, we don't need the fd anymore */
+	//once mapped, we don't need the fd anymore
 	close(fd);
 
 	printf("Response code for get message: %d\n", status);
@@ -237,7 +221,6 @@ void connectToPatient(char* patientServerName){
 	munmap(patient_shmem_ptr, 4096);
 }
 
-//todo<internal channel>: include internal channel connection id (int_coid?) as parameter
 void monitorPatientVitals(void* shmem_ptr, int int_coid) {
 
 	// Get vitals
@@ -256,52 +239,33 @@ void monitorPatientVitals(void* shmem_ptr, int int_coid) {
 
 		// Check patient heart rate
 		if (patientVitals.heartRate < PATIENT_HEARTBEAT_LOWER_LIMIT || patientVitals.heartRate > PATIENT_HEARTBEAT_UPPER_LIMIT) {
-			// Send message to hospital system (critical)
 			status |= 1 << 0;
-			//printf("(TEMP) Heartrate critical: %d\n", patientVitals.heartRate);
 		}
 
 		// Check patient systolic blood pressure
 		if (patientVitals.systolicBP < PATIENT_SYSTOLIC_BP_LOWER_LIMIT || patientVitals.systolicBP > PATIENT_SYSTOLIC_BP_UPPER_LIMIT) {
-			// Send message to hospital system (critical)
 			status |= 1 << 1;
-			//printf("(TEMP) Systolic BP critical: %d\n", patientVitals.systolicBP);
 		}
 
 		// Check patient diastolic blood pressure
 		if (patientVitals.diastolicBP < PATIENT_DIASTOLIC_BP_LOWER_LIMIT || patientVitals.diastolicBP > PATIENT_DIASTOLIC_BP_UPPER_LIMIT) {
-			// Send message to hospital system (critical)
 			status |= 1 << 2;
-			//printf("(TEMP) Diastolic BP critical: %d\n", patientVitals.diastolicBP);
 		}
 
 		// Check patient temperature
 		if (patientVitals.temperature < PATIENT_TEMPERATURE_LOWER_LIMIT || patientVitals.temperature > PATIENT_TEMPERATURE_UPPER_LIMIT) {
-			// Send message to hospital system (critical)
 			status |= 1 << 3;
-			//printf("(TEMP) Temperature critical: %.1f\n", patientVitals.temperature);
 		}
 
 		// Check patient respiration
 		if (patientVitals.respiration < PATIENT_RESPIRATION_LOWER_LIMIT || patientVitals.respiration > PATIENT_RESPIRATION_UPPER_LIMIT) {
-			// Send message to hospital system (critical)
 			status |= 1 << 4;
-			//printf("(TEMP) Respiration critical: %d\n", patientVitals.respiration);
 		}
 
 		// Check patient oxygen saturation
 		if (patientVitals.oxygenSaturation > PATIENT_OXYGEN_SATURATION_LOWER_LIMIT) {
-			// Send message to hospital system (critical)
 			status |= 1 << 5;
-			//printf("(TEMP) Respiration critical: %d\n", patientVitals.respiration);
 		}
-
-		/*
-		//update treatments accordingly
-		for(int i = IV_FLUID; i <= MEDICINE; i++){
-			updateTreatment(shmem_ptr, i, &patientVitals);
-		}
-		*/
 
 		printf("Status: %d\n", status);
 
@@ -312,7 +276,6 @@ void monitorPatientVitals(void* shmem_ptr, int int_coid) {
 			printf("Critical status to internally send: %d\n", msg.status);
 			int reply = MsgSend(int_coid, &msg, sizeof(hospital_system_msg_to_t), &msgReply, sizeof(hospital_system_msg_from_t));
 		}
-
 
 		sleep(1);
 	}

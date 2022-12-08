@@ -64,17 +64,17 @@ void spawnMonitors(){
 
 	//needed to hide output of monitors
 	int fd_map[] = {SPAWN_FDCLOSED};
+
 	//just 5 monitors
 	for(int i = 0; i < 5; i++){
 
 		char *args[] = {"monitor", NULL};
 		if ((spawn("monitor", 1, fd_map, &inherit, args, environ)) == -1)
 		{
-			printf("ERROR: Could not spawn monitor");
+			printf("ERROR: Could not spawn monitor\n");
 		}
 
 	}
-
 }
 
 void mainLoop(name_attach_t** channel){
@@ -121,15 +121,12 @@ void mainLoop(name_attach_t** channel){
 
 		//send message back to client
 		int result = MsgReply(rcvid, EOK, &rmsg, sizeof(rmsg));
-
-		//todo: extra handling depending on message sent back?
 	}
 
 	free(monitorList.monitors);
 }
 
 int handlePatientMessage(hospital_system_msg_to_t* msg, hospital_system_msg_from_t* rmsg, monitor_array_t* monitorList){
-
 	//upon patient connection, find it a freed up monitor and
 	switch(msg->messageType){
 	case HS_MSG_CONNECT:
@@ -176,7 +173,6 @@ int handlePatientMessage(hospital_system_msg_to_t* msg, hospital_system_msg_from
 }
 
 void handleMonitorMessage(hospital_system_msg_to_t* msg, hospital_system_msg_from_t* rmsg, monitor_array_t* monitorList, pid_t monitor_pid){
-
 	void* shmem_ptr;
 
 	shm_handle_t monitor_handle;
@@ -194,8 +190,6 @@ void handleMonitorMessage(hospital_system_msg_to_t* msg, hospital_system_msg_fro
 		//write default status to monitor section
 		write_shmem(shmem_ptr, "Running\0", HS_SHMEM_OFFSET_STATUS, 10);
 
-		//NOTE: ANY new shared memory values we want to add MUST be initialized here!!!! Or the monitor will segfault!!1!111!
-
 		//track new monitor with id equal to previous length of array
 		monitorList->monitors = realloc(monitorList->monitors, (monitorList->length + 1)*sizeof(monitor_data_t));
 		monitorList->monitors[monitorList->length] = (monitor_data_t){monitorList->length, 0, shmem_ptr};
@@ -208,11 +202,7 @@ void handleMonitorMessage(hospital_system_msg_to_t* msg, hospital_system_msg_fro
 
 		break;
 	case HS_MSG_PATIENT_CRITICAL:
-
-
 		printf("Received notification of patient in critical condition from monitor %d, status code %d\n",msg->id, msg->statusCode);
-
-		//todo: add actual handling here?
 
 		//notify the monitor that help is on the way
 		rmsg->messageReplyType = HS_REPLY_HELP;
@@ -222,6 +212,7 @@ void handleMonitorMessage(hospital_system_msg_to_t* msg, hospital_system_msg_fro
 
 	case HS_MSG_DOCTOR_PRESENT:
 		printf("Doctor has arrived at the critical patient at monitor %d\n", msg->id);
+
 		rmsg->messageReplyType = HS_REPLY_ACK;
 
 		break;
@@ -252,7 +243,6 @@ void handleShutdown(name_attach_t** channel, monitor_array_t* monitorList){
 
 		munmap(monitor_shmem_ptr, 4096);
 	}
-
 
 	//clear allocated memory and free channel
 	name_detach(*channel, 0);
