@@ -1,5 +1,7 @@
 # COMP4900-Project
 
+**MADE PUBLIC FOR MARKING PURPOSES (prof permission given). DO NOT USE THIS CODE ELSEWHERE!!!**
+
 COMP 4900 project
 
 ## Note for running hospital system
